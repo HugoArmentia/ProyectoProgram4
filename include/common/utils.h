@@ -6,5 +6,6 @@
 #define MAX_FECHA_HORA 20  
 
 void limpiarBuffer(); 
+void obtenerFechaHoraActual(char *fechaHora);
 
 #endif
