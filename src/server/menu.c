@@ -86,6 +86,8 @@ void mostrarMenuAdmin() {
         printf("1. Listar Usuarios\n");
         printf("2. Ver Logs\n");
         printf("3. Crear Usuario Nuevo\n");
+        printf("4. Modificar Usuario\n");
+        printf("5. Eliminar Usuario\n");
         printf("0. Cerrar sesión\n");
         printf("Seleccione una opción: ");
         scanf("%d", &opcion);
@@ -101,6 +103,12 @@ void mostrarMenuAdmin() {
             case 3:
                 registrarUsuario();
                 break;
+            case 4:
+                modificarUsuario();  // Nueva función que vamos a implementar
+                break;
+            case 5:
+                eliminarUsuario();  // Nueva función que vamos a implementar
+                break;
             case 0:
                 printf("Cerrando sesión de Administrador...\n");
                 return;
@@ -109,3 +117,5 @@ void mostrarMenuAdmin() {
         }
     } while(opcion != 0);
 }
+
+

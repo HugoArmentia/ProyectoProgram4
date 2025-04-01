@@ -143,4 +143,26 @@ void listarUsuarios() {
         printf("Fecha de Registro: %s\n", usuarios[i].fecha_registro);
         printf("-------------------------------\n");
     }
+    
+}
+//Funcion modificar un usuario
+void modificarUsuario() {
+    int userId;
+    printf("Ingrese el ID del usuario que desea modificar: ");
+    scanf("%d", &userId);
+    getchar();
+
+   
+    printf("Usuario con ID %d modificado exitosamente.\n", userId);
+}
+
+// Función para eliminar un usuario
+void eliminarUsuario() {
+    int userId;
+    printf("Ingrese el ID del usuario que desea eliminar: ");
+    scanf("%d", &userId);
+    getchar();
+
+    
+    printf("Usuario con ID %d eliminado exitosamente.\n", userId);
 }
