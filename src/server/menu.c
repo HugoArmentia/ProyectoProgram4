@@ -6,51 +6,35 @@
 #include "logs.h"
 #include "database.h"
 
-void mostrarMenuPrincipal() {
+void mostrarMenuMedico(int medicoId) {  
     int opcion;
 
     do {
-        printf("\n==== MENÚ PRINCIPAL ====\n");
-        printf("1. Registrar Usuario\n");
-        printf("2. Iniciar Sesión\n");
-        printf("3. Crear Cita\n");
-        printf("4. Listar Citas\n");
-        printf("5. Cancelar Cita\n");
-        printf("6. Mostrar Historial\n");
-        printf("7. Mostrar Logs\n");
-        printf("8. Salir\n");
+        printf("\n======= MENU MEDICO =======\n");
+        printf("1. Consultar citas asignadas\n");
+        printf("2. Ver historial de citas\n");
+        printf("3. Actualizar estado de una cita\n");
+        printf("0. Cerrar sesión\n");
         printf("Seleccione una opción: ");
         scanf("%d", &opcion);
+        getchar();  
 
-        switch (opcion) {
+        switch(opcion) {
             case 1:
-                registrarUsuario();
+                listarCitasMedico(medicoId);  
                 break;
             case 2:
-                autenticarUsuario();
+                listarHistorialMedico(medicoId);  
                 break;
             case 3:
-                crearCita();
+                actualizarEstadoCita(medicoId);
                 break;
-            case 4:
-                listarCitas();
-                break;
-            case 5:
-                cancelarCita();
-                break;
-            case 6:
-                listarHistorial();
-                break;
-            case 7:
-                listarLogs();
-                break;
-            case 8:
-                printf("Saliendo del sistema...\n");
-                break;
+            case 0:
+                printf("Cerrando sesión de Médico...\n");
+                return;
             default:
-                printf("Opción no válida, intente nuevamente.\n");
+                printf("Opción no válida. Intente nuevamente.\n");
         }
-    } while (opcion != 8);
-
+    } while(opcion != 0);
 }
 
