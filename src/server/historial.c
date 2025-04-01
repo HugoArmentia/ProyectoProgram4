@@ -69,3 +69,18 @@ void listarHistorial() {
         printf("---------------------------------------------\n");
     }
 }
+
+void listarHistorialMedico(int medicoId) {
+    printf("\n======= HISTORIAL DE CITAS =======\n");
+
+    for (int i = 0; i < totalHistorial; i++) {
+        if (historial[i].medico_id == medicoId) {
+            printf("ID Historial: %d\n", historial[i].id);
+            printf("Paciente ID: %d\n", historial[i].paciente_id);
+            printf("Fecha: %s\n", historial[i].fecha);
+            printf("Estado: %s\n", historial[i].estado);
+            printf("Motivo: %s\n", historial[i].motivo);
+            printf("-------------------------------\n");
+        }
+    }
+}

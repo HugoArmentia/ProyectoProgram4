@@ -20,10 +20,10 @@ int main() {
 
     do {
         printf("\n======= MENU PRINCIPAL =======\n");
-        printf("1. Iniciar sesión\n");
-        printf("2. Registrar nuevo usuario\n");
+        printf("1. Iniciar sesion\n");
+        printf("2. Registrar nuevo usuario (Paciente/Medico/Admin)\n");
         printf("0. Salir\n");
-        printf("Seleccione una opción: ");
+        printf("Seleccione una opcion: ");
         scanf("%d", &opcion);
         getchar();
 
