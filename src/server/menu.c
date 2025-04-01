@@ -52,43 +52,47 @@ void mostrarMenuPaciente() {
     } while(opcion != 0);
 }
 
-void mostrarMenuMedico() {
+void mostrarMenuMedico(int medicoId) {
     int opcion;
 
     do {
         printf("\n======= MENU MEDICO =======\n");
-        printf("1. Consultar citas asignadas\n");
-        printf("2. Ver historial de citas\n");
+        printf("1. Consultar citas programadas\n");
+        printf("2. Modificar cita\n");
+        printf("3. Cancelar cita\n");
+        printf("4. Ver historial de citas\n");
         printf("0. Cerrar sesión\n");
         printf("Seleccione una opción: ");
         scanf("%d", &opcion);
-        getchar();
+        getchar();  // Limpiar el buffer de entrada
 
         switch(opcion) {
             case 1:
-<<<<<<< HEAD
-                listarCitasMedico(medicoId);  
+                listarCitasMedico(medicoId);  // Mostrar las citas asignadas a este médico
                 break;
+
             case 2:
-                listarHistorialMedico(medicoId);  
+                modificarCitaMedico(medicoId);  // Permitir modificar citas programadas
                 break;
+
             case 3:
-                actualizarEstadoCita(medicoId);  
-=======
-                listarCitas();
+                cancelarCitaMedico(medicoId);  // Permitir cancelar citas programadas
                 break;
-            case 2:
-                listarHistorial();
->>>>>>> 1a72b8dbf1fe41fb65028626b4875b0996d9efcf
+
+            case 4:
+                listarHistorialMedico(medicoId);  // Mostrar el historial completo de citas del médico
                 break;
+
             case 0:
-                printf("Cerrando sesión de Medico...\n");
+                printf("Cerrando sesión de Médico...\n");
                 return;
+
             default:
                 printf("Opción no válida. Intente nuevamente.\n");
         }
     } while(opcion != 0);
 }
+
 
 void mostrarMenuAdmin() {
     int opcion;
