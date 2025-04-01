@@ -117,8 +117,6 @@ void listarCitasMedico(int medicoId) {
     }
 }
 
-<<<<<<< HEAD
-=======
 void modificarCita() {
     int citaId;
     int encontrado = 0;
@@ -165,38 +163,39 @@ void modificarCita() {
     }
 }
 
->>>>>>> 1a72b8dbf1fe41fb65028626b4875b0996d9efcf
 void actualizarEstadoCita(int medicoId) { 
     int citaId;
     char nuevoEstado[20];
+    int citaEncontrada = 0;  // Declara citaEncontrada como un entero
+
     printf("Ingrese el ID de la cita que desea actualizar: ");
     scanf("%d", &citaId);
-    getchar();
+    getchar();  // Limpiar el buffer
 
     printf("Ingrese el nuevo estado (Programada / Completada / Cancelada): ");
     fgets(nuevoEstado, 20, stdin);
-    nuevoEstado[strcspn(nuevoEstado, "\n")] = '\0';
+    nuevoEstado[strcspn(nuevoEstado, "\n")] = '\0';  // Eliminar salto de línea
 
     for (int i = 0; i < totalCitas; i++) {
         if (citas[i].id == citaId && citas[i].medico_id == medicoId) {
             strcpy(citas[i].estado, nuevoEstado);
             printf("Estado de la cita actualizado correctamente.\n");
-<<<<<<< HEAD
 
-          
             guardarCitas();
 
-            
+            // Registrar el cambio en el log
             char descripcion[200];
             sprintf(descripcion, "Cita %d actualizada a estado: %s", citaId, nuevoEstado);
             registrarLog("Actualizar Cita", descripcion, medicoId);
 
-            citaEncontrada = 1;
+            citaEncontrada = 1;  // Ahora citaEncontrada está declarada correctamente
             break;
-=======
-            guardarCitas();  // Asegúrate de tener esta función implementada
->>>>>>> 1a72b8dbf1fe41fb65028626b4875b0996d9efcf
         }
+    }
+
+    // Si no se encontró la cita
+    if (!citaEncontrada) {
+        printf("No se encontró ninguna cita con el ID especificado.\n");
     }
 }
 

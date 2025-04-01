@@ -133,7 +133,7 @@ void reservarCitaDesdeCalendario(int paciente_id) {
 
     guardarCitas();
 
-    printf("✅ Cita reservada con éxito para la fecha: %d-%d-%d %s\n", dia, mes, anio, horas[indiceHora]);
+    printf(" Cita reservada con éxito para la fecha: %d-%d-%d %s\n", dia, mes, anio, horas[indiceHora]);
 }
 
 

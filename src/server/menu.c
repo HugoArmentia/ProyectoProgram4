@@ -41,7 +41,7 @@ void mostrarMenuPaciente() {
                 cancelarCita();
                 break;
             case 5:
-                listarHistorial();
+                listarHistorial();  // Llamada a la función para mostrar el historial
                 break;
             case 0:
                 printf("Cerrando sesión de Paciente...\n");
@@ -52,13 +52,21 @@ void mostrarMenuPaciente() {
     } while(opcion != 0);
 }
 
+
 void mostrarMenuMedico() {
     int opcion;
+    int medicoId;
+
+    // Solicitar el ID del médico antes de mostrar el menú
+    printf("Ingrese su ID de médico: ");
+    scanf("%d", &medicoId);
+    getchar();  // Limpiar el buffer
 
     do {
         printf("\n======= MENU MEDICO =======\n");
         printf("1. Consultar citas asignadas\n");
         printf("2. Ver historial de citas\n");
+        printf("3. Actualizar estado de una cita\n");
         printf("0. Cerrar sesión\n");
         printf("Seleccione una opción: ");
         scanf("%d", &opcion);
@@ -66,20 +74,14 @@ void mostrarMenuMedico() {
 
         switch(opcion) {
             case 1:
-<<<<<<< HEAD
-                listarCitasMedico(medicoId);  
+                listarCitasMedico(medicoId);  // Mostrar solo las citas asignadas a este médico
                 break;
             case 2:
-                listarHistorialMedico(medicoId);  
+                listarHistorial();  // Mostrar historial de citas relacionadas con el médico
+                listarHistorialMedico(medicoId);  // Mostrar historial de citas de este médico
                 break;
             case 3:
-                actualizarEstadoCita(medicoId);  
-=======
-                listarCitas();
-                break;
-            case 2:
-                listarHistorial();
->>>>>>> 1a72b8dbf1fe41fb65028626b4875b0996d9efcf
+                actualizarEstadoCita(medicoId);  // Cambiar el estado de una cita específica (ej. Programada -> Completada)
                 break;
             case 0:
                 printf("Cerrando sesión de Medico...\n");

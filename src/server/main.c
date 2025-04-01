@@ -12,7 +12,7 @@ int usuarioActualId = -1;
 char tipoUsuarioActual[20] = "";
 
 int main() {
-    inicializarArchivos();
+    inicializarBaseDeDatos();
     cargarUsuarios();
     cargarLogs();
 
