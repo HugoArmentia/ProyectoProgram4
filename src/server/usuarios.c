@@ -209,3 +209,13 @@ void eliminarUsuario() {
     }
     printf("No se encontró un usuario con el ID especificado.\n");
 }
+
+void listarMedicos() {
+    printf("\n======= LISTA DE MÉDICOS =======\n");
+    for (int i = 0; i < totalUsuarios; i++) {
+        if (strcmp(usuarios[i].tipo, "Medico") == 0) {
+            printf("ID: %d, Nombre: %s\n", usuarios[i].id, usuarios[i].nombre);
+        }
+    }
+    printf("--------------------------------\n");
+}

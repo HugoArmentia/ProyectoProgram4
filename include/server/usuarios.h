@@ -25,5 +25,6 @@ int autenticarUsuario();
 void listarUsuarios();
 void modificarUsuario();
 void eliminarUsuario();
+void listarMedicos();
 
 #endif

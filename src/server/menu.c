@@ -23,10 +23,13 @@ void mostrarMenuPaciente() {
 
         switch(opcion) {
             case 1:
-                crearCita();
+                reservarCita();
                 break;
             case 2:
                 listarCitas();
+                break;
+            case 3:
+                modificarCita();
                 break;
             case 4:
                 cancelarCita();
