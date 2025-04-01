@@ -60,13 +60,13 @@ void mostrarMenuMedico(int medicoId) {
 
         switch(opcion) {
             case 1:
-                listarCitasMedico(medicoId);  // Mostrar solo las citas asignadas a este médico
+                listarCitasMedico(medicoId);  
                 break;
             case 2:
-                listarHistorialMedico(medicoId);  // Mostrar historial de citas de este médico
+                listarHistorialMedico(medicoId);  
                 break;
             case 3:
-                actualizarEstadoCita(medicoId);  // Cambiar el estado de una cita específica (ej. Programada -> Completada)
+                actualizarEstadoCita(medicoId);  
                 break;
             case 0:
                 printf("Cerrando sesión de Médico...\n");
