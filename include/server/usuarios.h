@@ -16,6 +16,7 @@ typedef struct {
 
 extern Usuario usuarios[MAX_USUARIOS];
 extern int totalUsuarios;
+extern int usuarioActualId; 
 
 void cargarUsuarios();              
 void guardarUsuarios();
