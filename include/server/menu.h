@@ -3,5 +3,6 @@
 
 // Funciones del menú principal
 void mostrarMenuPrincipal();
+void mostrarMenuMedico();
 
 #endif

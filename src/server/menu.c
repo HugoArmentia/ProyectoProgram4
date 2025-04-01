@@ -51,4 +51,6 @@ void mostrarMenuPrincipal() {
                 printf("Opción no válida, intente nuevamente.\n");
         }
     } while (opcion != 8);
+
 }
+

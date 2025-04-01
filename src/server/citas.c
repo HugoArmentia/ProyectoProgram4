@@ -81,3 +81,73 @@ void cancelarCita(int id) {
     }
     printf("Cita con ID %d cancelada correctamente.\n", id);
 }
+
+void mostrarMenuMedico(int medicoId) {  
+    int opcion;
+
+    do {
+        printf("\n======= MENU MEDICO =======\n");
+        printf("1. Consultar citas asignadas\n");
+        printf("2. Ver historial de citas\n");
+        printf("3. Actualizar estado de una cita\n");
+        printf("0. Cerrar sesión\n");
+        printf("Seleccione una opción: ");
+        scanf("%d", &opcion);
+        getchar();  
+
+        switch(opcion) {
+            case 1:
+                listarCitasMedico(medicoId);  
+                break;
+            case 2:
+                listarHistorialMedico(medicoId);  
+                break;
+            case 3:
+                actualizarEstadoCita(medicoId);
+                break;
+            case 0:
+                printf("Cerrando sesión de Médico...\n");
+                return;
+            default:
+                printf("Opción no válida. Intente nuevamente.\n");
+        }
+    } while(opcion != 0);
+}
+
+void listarCitasMedico(int medicoId) {
+    printf("\n======= CITAS ASIGNADAS =======\n");
+
+    for (int i = 0; i < totalCitas; i++) {
+        if (citas[i].medico_id == medicoId) {
+            printf("ID Cita: %d\n", citas[i].id);
+            printf("Paciente ID: %d\n", citas[i].paciente_id);
+            printf("Fecha: %s\n", citas[i].fecha);
+            printf("Estado: %s\n", citas[i].estado);
+            printf("Motivo: %s\n", citas[i].motivo);
+            printf("-------------------------------\n");
+        }
+    }
+}
+
+void actualizarEstadoCita(int medicoId) {
+    int citaId;
+    char nuevoEstado[20];
+
+    printf("Ingrese el ID de la cita que desea actualizar: ");
+    scanf("%d", &citaId);
+    getchar();
+
+    printf("Ingrese el nuevo estado (Programada / Completada / Cancelada): ");
+    fgets(nuevoEstado, 20, stdin);
+    nuevoEstado[strcspn(nuevoEstado, "\n")] = '\0';
+
+    for (int i = 0; i < totalCitas; i++) {
+        if (citas[i].id == citaId && citas[i].medico_id == medicoId) {
+            strcpy(citas[i].estado, nuevoEstado);
+            printf("Estado de la cita actualizado correctamente.\n");
+            guardarCitas();  
+            return;
+        }
+    }
+    printf("No se encontró la cita o no pertenece a este médico.\n");
+}

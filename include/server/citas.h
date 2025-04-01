@@ -22,5 +22,8 @@ void crearCita();
 void modificarCita();
 void cancelarCita();
 void listarCitas();
+void listarCitasMedico(int medicoId);
+void actualizarEstadoCita(int medicoId);
+
 
 #endif
