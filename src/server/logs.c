@@ -34,7 +34,7 @@ void guardarLogs() {
         printf("Error al guardar el archivo de logs.\n");
         return;
     }
-
+    // estamos cooked
     for (int i = 0; i < totalLogs; i++) {
         fprintf(archivo, "%d,%s,%s,%d,%s\n",
                 logs[i].id,

@@ -52,8 +52,12 @@ void mostrarMenuPaciente() {
     } while(opcion != 0);
 }
 
+<<<<<<< HEAD
 
 void mostrarMenuMedico() {
+=======
+void mostrarMenuMedico(int medicoId) {
+>>>>>>> 52d09520335cb9c097cbcb8da76e45d52463ad26
     int opcion;
     int medicoId;
 
@@ -64,33 +68,61 @@ void mostrarMenuMedico() {
 
     do {
         printf("\n======= MENU MEDICO =======\n");
+<<<<<<< HEAD
         printf("1. Consultar citas asignadas\n");
         printf("2. Ver historial de citas\n");
         printf("3. Actualizar estado de una cita\n");
+=======
+        printf("1. Consultar citas programadas\n");
+        printf("2. Modificar cita\n");
+        printf("3. Cancelar cita\n");
+        printf("4. Ver historial de citas\n");
+>>>>>>> 52d09520335cb9c097cbcb8da76e45d52463ad26
         printf("0. Cerrar sesión\n");
         printf("Seleccione una opción: ");
         scanf("%d", &opcion);
-        getchar();
+        getchar();  // Limpiar el buffer de entrada
 
         switch(opcion) {
             case 1:
+<<<<<<< HEAD
                 listarCitasMedico(medicoId);  // Mostrar solo las citas asignadas a este médico
+=======
+                listarCitasMedico(medicoId);  // Mostrar las citas asignadas a este médico
+>>>>>>> 52d09520335cb9c097cbcb8da76e45d52463ad26
                 break;
+
             case 2:
+<<<<<<< HEAD
                 listarHistorial();  // Mostrar historial de citas relacionadas con el médico
                 listarHistorialMedico(medicoId);  // Mostrar historial de citas de este médico
+=======
+                modificarCitaMedico(medicoId);  // Permitir modificar citas programadas
+>>>>>>> 52d09520335cb9c097cbcb8da76e45d52463ad26
                 break;
+
             case 3:
+<<<<<<< HEAD
                 actualizarEstadoCita(medicoId);  // Cambiar el estado de una cita específica (ej. Programada -> Completada)
+=======
+                cancelarCitaMedico(medicoId);  // Permitir cancelar citas programadas
                 break;
+
+            case 4:
+                listarHistorialMedico(medicoId);  // Mostrar el historial completo de citas del médico
+>>>>>>> 52d09520335cb9c097cbcb8da76e45d52463ad26
+                break;
+
             case 0:
-                printf("Cerrando sesión de Medico...\n");
+                printf("Cerrando sesión de Médico...\n");
                 return;
+
             default:
                 printf("Opción no válida. Intente nuevamente.\n");
         }
     } while(opcion != 0);
 }
+
 
 void mostrarMenuAdmin() {
     int opcion;
