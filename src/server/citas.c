@@ -106,31 +106,18 @@ void cancelarCita() {
 
 
 
-void listarCitasMedico(int medicoId) {
-    sqlite3_stmt *stmt;
-    const char *sql = "SELECT id, paciente_id, fecha, estado, motivo FROM citas WHERE medico_id = ?;";
+void listarCitasMedico(int medico_id) {
+    printf("\n======= CITAS ASIGNADAS =======\n");
 
-    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) == SQLITE_OK) {
-        sqlite3_bind_int(stmt, 1, medicoId);
-
-        printf("======= CITAS PROGRAMADAS =======\n");
-        while (sqlite3_step(stmt) == SQLITE_ROW) {
-            int citaId = sqlite3_column_int(stmt, 0);
-            int pacienteId = sqlite3_column_int(stmt, 1);
-            const char *fecha = (const char*)sqlite3_column_text(stmt, 2);
-            const char *estado = (const char*)sqlite3_column_text(stmt, 3);
-            const char *motivo = (const char*)sqlite3_column_text(stmt, 4);
-
-            printf("Cita ID: %d\n", citaId);
-            printf("Paciente ID: %d\n", pacienteId);
-            printf("Fecha: %s\n", fecha);
-            printf("Estado: %s\n", estado);
-            printf("Motivo: %s\n", motivo);
-            printf("-------------------------\n");
+    for (int i = 0; i < totalCitas; i++) {
+        if (citas[i].medico_id == medico_id) {
+            printf("ID Cita: %d\n", citas[i].id);
+            printf("Paciente ID: %d\n", citas[i].paciente_id);
+            printf("Fecha: %s\n", citas[i].fecha);
+            printf("Estado: %s\n", citas[i].estado);
+            printf("Motivo: %s\n", citas[i].motivo);
+            printf("-------------------------------\n");
         }
-        sqlite3_finalize(stmt);
-    } else {
-        printf("Error al obtener las citas: %s\n", sqlite3_errmsg(db));
     }
 }
 

@@ -66,8 +66,8 @@ void mostrarCalendarioMensual(int mes, int anio) {
 }
 
 void reservarCitaDesdeCalendario(int paciente_id) {
-    int dia, mes, anio, indiceHora;
-    
+    int dia, mes, anio, indiceHora, medico_id;
+
     // Mostrar el calendario de los próximos meses
     mostrarCalendariosFuturos();
 
@@ -81,18 +81,9 @@ void reservarCitaDesdeCalendario(int paciente_id) {
     }
 
     // Mostrar el calendario para ese mes
-    time_t t = time(NULL);  // Obtener el tiempo actual
-    struct tm *fechaActual = localtime(&t);  // Convertir a estructura tm
-
-    anio = fechaActual->tm_year + 1900;  // Obtener el año actual
-    int mesActual = fechaActual->tm_mon + 1;  // Obtener el mes actual (1-12)
-
-    mes = mesActual + mes - 1;  // Ajustamos el mes según el valor ingresado
-
-    if (mes > 12) {  // Si el mes supera diciembre, ajustamos el año
-        mes -= 12;
-        anio++;
-    }
+    time_t t = time(NULL);
+    struct tm *fechaActual = localtime(&t);
+    anio = fechaActual->tm_year + 1900;
 
     printf("Ingrese el día que desea reservar: ");
     scanf("%d", &dia);
@@ -110,30 +101,32 @@ void reservarCitaDesdeCalendario(int paciente_id) {
         return;
     }
 
+    // Solicitar el ID del médico
+    printf("Ingrese el ID del médico con el que desea reservar la cita: ");
+    scanf("%d", &medico_id);
+    getchar();
+
     // Crear una nueva cita
     Cita nuevaCita;
     nuevaCita.id = totalCitas + 1;
     nuevaCita.paciente_id = paciente_id;
+    nuevaCita.medico_id = medico_id;
     nuevaCita.dia = dia;
     nuevaCita.mes = mes;
     nuevaCita.anio = anio;
     strcpy(nuevaCita.fecha, horas[indiceHora]);  // Hora de la cita
+    strcpy(nuevaCita.estado, "Programada");
 
-    printf("Cita reservada para: %d-%d-%d %s\n", dia, mes, anio, horas[indiceHora]);
-
-    // Pedir el motivo de la cita
     printf("Ingrese el motivo de la cita: ");
     fgets(nuevaCita.motivo, sizeof(nuevaCita.motivo), stdin);
     nuevaCita.motivo[strcspn(nuevaCita.motivo, "\n")] = '\0';  // Limpiar el salto de línea
-
-    strcpy(nuevaCita.estado, "Programada");
 
     citas[totalCitas] = nuevaCita;
     totalCitas++;
 
     guardarCitas();
 
-    printf(" Cita reservada con éxito para la fecha: %d-%d-%d %s\n", dia, mes, anio, horas[indiceHora]);
+    printf("Cita reservada con éxito para la fecha: %d-%d-%d %s\n", dia, mes, anio, horas[indiceHora]);
 }
 
 
