@@ -1,4 +1,16 @@
+<<<<<<< HEAD
+1,p,Medico,p,o,o,o,o
+2,o,Medico,o,o,o,o,oo
+3,o,o,o,o,o,o,o
+4,o,Medico,o,e,e,e,e
+5,Josu,Medico,asd,asd,asd,asd,asd
+6,r,Medico,r,e,e,e,e
+=======
 1,Paciente,Paciente,asd,asd,asd,asd,ads
 2,Medico,Medico,asd,asd,asd,asd,asd
 3,Admin,Admin,asd,asd,asd,asd,asd
+<<<<<<< HEAD
 4,Paciente,Paciente,asd,asd,asd,as,dasd
+=======
+>>>>>>> 1a72b8dbf1fe41fb65028626b4875b0996d9efcf
+>>>>>>> 5244e8109710a9c6eaf45af6e73ef2cbf301c0e0

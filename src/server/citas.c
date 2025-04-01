@@ -117,6 +117,8 @@ void listarCitasMedico(int medicoId) {
     }
 }
 
+<<<<<<< HEAD
+=======
 void modificarCita() {
     int citaId;
     int encontrado = 0;
@@ -163,6 +165,7 @@ void modificarCita() {
     }
 }
 
+>>>>>>> 1a72b8dbf1fe41fb65028626b4875b0996d9efcf
 void actualizarEstadoCita(int medicoId) { 
     int citaId;
     char nuevoEstado[20];
@@ -178,7 +181,21 @@ void actualizarEstadoCita(int medicoId) {
         if (citas[i].id == citaId && citas[i].medico_id == medicoId) {
             strcpy(citas[i].estado, nuevoEstado);
             printf("Estado de la cita actualizado correctamente.\n");
+<<<<<<< HEAD
+
+          
+            guardarCitas();
+
+            
+            char descripcion[200];
+            sprintf(descripcion, "Cita %d actualizada a estado: %s", citaId, nuevoEstado);
+            registrarLog("Actualizar Cita", descripcion, medicoId);
+
+            citaEncontrada = 1;
+            break;
+=======
             guardarCitas();  // Asegúrate de tener esta función implementada
+>>>>>>> 1a72b8dbf1fe41fb65028626b4875b0996d9efcf
         }
     }
 }

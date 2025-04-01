@@ -66,10 +66,20 @@ void mostrarMenuMedico() {
 
         switch(opcion) {
             case 1:
+<<<<<<< HEAD
+                listarCitasMedico(medicoId);  
+                break;
+            case 2:
+                listarHistorialMedico(medicoId);  
+                break;
+            case 3:
+                actualizarEstadoCita(medicoId);  
+=======
                 listarCitas();
                 break;
             case 2:
                 listarHistorial();
+>>>>>>> 1a72b8dbf1fe41fb65028626b4875b0996d9efcf
                 break;
             case 0:
                 printf("Cerrando sesión de Medico...\n");
