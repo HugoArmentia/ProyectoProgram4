@@ -98,9 +98,10 @@ void listarCitasMedico(int medicoId) {
 }
 
 
-void actualizarEstadoCita(int medicoId) {
+void actualizarEstadoCita(int medicoId) { 
     int citaId;
     char nuevoEstado[20];
+    int citaEncontrada = 0;
 
     printf("Ingrese el ID de la cita que desea actualizar: ");
     scanf("%d", &citaId);
@@ -117,4 +118,3 @@ void actualizarEstadoCita(int medicoId) {
             guardarCitas();  // Asegúrate de tener esta función implementada
         }
     }
-}
