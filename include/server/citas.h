@@ -19,7 +19,6 @@ extern int totalCitas;
 void cargarCitas();
 void guardarCitas();
 void crearCita();
-void modificarCita();
 void cancelarCita();
 void listarCitas();
 

@@ -6,16 +6,12 @@
 #include "logs.h"
 #include "usuarios.h"
 
-Usuario usuarios[MAX_USUARIOS];
-int totalUsuarios = 0;
-LogActividad logs[MAX_LOGS];
-int totalLogs = 0;
-
+// Variables globales del usuario autenticado
 int usuarioActualId = -1;
 char tipoUsuarioActual[20] = "";
 
 int main() {
-
+    // Inicializar archivos necesarios
     inicializarArchivos();
     cargarUsuarios();
     cargarLogs();

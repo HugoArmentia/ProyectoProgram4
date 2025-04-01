@@ -1,7 +1,9 @@
 #ifndef MENU_H
 #define MENU_H
 
-// Funciones del menú principal
 void mostrarMenuPrincipal();
+void mostrarMenuPaciente();
+void mostrarMenuMedico();
+void mostrarMenuAdmin();
 
 #endif
