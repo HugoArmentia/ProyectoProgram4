@@ -51,25 +51,6 @@ void guardarHistorial() {
     fclose(archivo);
 }
 
-void listarHistorial() {
-    if (totalHistorial == 0) {
-        printf("No hay historial de citas registrado.\n");
-        return;
-    }
-
-    printf("======= LISTADO DE HISTORIAL DE CITAS =======\n");
-
-    for (int i = 0; i < totalHistorial; i++) {
-        printf("ID de Historial: %d\n", historial[i].id);
-        printf("ID del Paciente: %d\n", historial[i].paciente_id);
-        printf("ID del Médico: %d\n", historial[i].medico_id);
-        printf("Fecha: %s\n", historial[i].fecha);
-        printf("Estado: %s\n", historial[i].estado);
-        printf("Motivo: %s\n", historial[i].motivo);
-        printf("---------------------------------------------\n");
-    }
-}
-
 void listarHistorialMedico(int medicoId) {
     printf("\n======= HISTORIAL DE CITAS =======\n");
 

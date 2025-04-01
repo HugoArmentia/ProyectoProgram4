@@ -19,7 +19,6 @@ extern int totalHistorial;
 void cargarHistorial();
 void guardarHistorial();
 void registrarEnHistorial(HistorialCita nuevaEntrada);
-void listarHistorial();
 void listarHistorialMedico(int medicoId);
 
 

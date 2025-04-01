@@ -7,6 +7,9 @@ typedef struct {
     int id;
     int paciente_id;
     int medico_id;
+    int dia;
+    int mes;
+    int anio;
     char fecha[20];       // Formato: "YYYY-MM-DD HH:MM:SS"
     char estado[20];       // Ej: "Programada" o "Cancelada"
     char motivo[100];      // Motivo de la cita
@@ -18,10 +21,10 @@ extern int totalCitas;
 // Funciones para manejo de citas
 void cargarCitas();
 void guardarCitas();
-void reservarCita();
+void listarCitas();
 void modificarCita();
 void cancelarCita();
-void listarCitas();
+void listarHistorial();
 void listarCitasMedico(int medicoId);
 void actualizarEstadoCita(int medicoId);
 

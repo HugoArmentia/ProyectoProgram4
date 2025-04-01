@@ -13,7 +13,8 @@ SRC = src/server/main.c \
       src/server/logs.c \
       src/server/database.c \
       src/server/config.c \
-      src/common/utils.c
+      src/common/utils.c \
+      src/server/calendario.c
 
 # Archivos objeto
 OBJ = $(SRC:.c=.o)
@@ -34,8 +35,8 @@ $(EXEC): $(OBJ)
 
 # Regla para limpiar archivos compilados
 clean:
-	del /Q $(OBJ) $(EXEC) 2>nul || rm -f $(OBJ) $(EXEC)
+	rm -f $(OBJ) $(EXEC)
 
 # Regla para limpiar archivos objeto
 cleanobj:
-	del /Q $(OBJ) 2>nul || rm -f $(OBJ)
+	rm -f $(OBJ)

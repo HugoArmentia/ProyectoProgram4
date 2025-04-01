@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "citas.h"
 #include "logs.h"
 #include "utils.h"
+#include "calendario.h"
 
 #define RUTA_CITAS "data/citas.txt"
 
@@ -17,13 +19,16 @@ void cargarCitas() {
         return;
     }
 
-    while (fscanf(archivo, "%d,%d,%d,%19[^,],%19[^,],%99[^\n]\n",
+    while (fscanf(archivo, "%d,%d,%d,%d,%d,%d,%19[^,],%19[^,],%99[^\n]\n",
                   &citas[totalCitas].id,
                   &citas[totalCitas].paciente_id,
                   &citas[totalCitas].medico_id,
+                  &citas[totalCitas].dia,
+                  &citas[totalCitas].mes,
+                  &citas[totalCitas].anio,
                   citas[totalCitas].fecha,
                   citas[totalCitas].estado,
-                  citas[totalCitas].motivo) == 6) {
+                  citas[totalCitas].motivo) == 9) {
         totalCitas++;
     }
 
@@ -38,10 +43,13 @@ void guardarCitas() {
     }
 
     for (int i = 0; i < totalCitas; i++) {
-        fprintf(archivo, "%d,%d,%d,%s,%s,%s\n",
+        fprintf(archivo, "%d,%d,%d,%d,%d,%d,%s,%s,%s\n",
                 citas[i].id,
                 citas[i].paciente_id,
                 citas[i].medico_id,
+                citas[i].dia,
+                citas[i].mes,
+                citas[i].anio,
                 citas[i].fecha,
                 citas[i].estado,
                 citas[i].motivo);
@@ -50,49 +58,20 @@ void guardarCitas() {
     fclose(archivo);
 }
 
-void reservarCita() {
-    int paciente_id;
-    
-    printf("Ingrese su ID de paciente: ");
-    scanf("%d", &paciente_id);
-    getchar();  // Limpiar el buffer
-
-    if (totalCitas >= MAX_CITAS) {
-        printf("Límite máximo de citas alcanzado.\n");
-        return;
-    }
-
-    Cita nuevaCita;
-    nuevaCita.id = totalCitas + 1;
-    nuevaCita.paciente_id = paciente_id;
-
-    // Hay que hacer una manera para mirar los medicos disponibles
-
-    printf("Ingrese el ID del médico con el que desea reservar la cita: ");
-    scanf("%d", &nuevaCita.medico_id);
-    getchar();
-
-    printf("Ingrese la fecha de la cita (YYYY-MM-DD HH:MM): ");
-    fgets(nuevaCita.fecha, 20, stdin);
-    nuevaCita.fecha[strcspn(nuevaCita.fecha, "\n")] = 0;
-
-    printf("Ingrese el motivo de la cita: ");
-    fgets(nuevaCita.motivo, 200, stdin);
-    nuevaCita.motivo[strcspn(nuevaCita.motivo, "\n")] = 0;
-
-    strcpy(nuevaCita.estado, "Programada");
-
-    citas[totalCitas] = nuevaCita;
-    totalCitas++;
-
-    guardarCitas();
-
-    printf("Cita reservada correctamente.\n");
-}
-
 void listarCitas() {
+    printf("\n======= CITAS PROGRAMADAS =======\n");
+
+    // Recorrer todas las citas y mostrar las programadas
     for (int i = 0; i < totalCitas; i++) {
-        printf("Cita ID: %d - Motivo: %s\n", citas[i].id, citas[i].motivo);
+        if (strcmp(citas[i].estado, "Programada") == 0) {
+            printf("ID: %d - Fecha: %d-%d-%d %s - Motivo: %s\n", 
+                    citas[i].id, 
+                    citas[i].dia, 
+                    citas[i].mes, 
+                    citas[i].anio, 
+                    citas[i].fecha, 
+                    citas[i].motivo);
+        }
     }
 }
 
@@ -105,13 +84,8 @@ void cancelarCita() {
     getchar();  // Limpiar el buffer
 
     for (int i = 0; i < totalCitas; i++) {
-        if (citas[i].id == citaId) {
+        if (citas[i].id == citaId && strcmp(citas[i].estado, "Programada") == 0) {
             encontrado = 1;
-
-            if (strcmp(citas[i].estado, "Cancelada") == 0) {
-                printf("Esta cita ya ha sido cancelada.\n");
-                return;
-            }
 
             // Cambiar el estado de la cita a Cancelada
             strcpy(citas[i].estado, "Cancelada");
@@ -123,9 +97,10 @@ void cancelarCita() {
     }
 
     if (!encontrado) {
-        printf("No se encontró ninguna cita con el ID especificado.\n");
+        printf("No se encontró ninguna cita con el ID especificado o la cita ya está cancelada.\n");
     }
 }
+
 
 void listarCitasMedico(int medicoId) {
     printf("\n======= CITAS ASIGNADAS =======\n");
@@ -151,30 +126,40 @@ void modificarCita() {
     getchar();  // Limpiar el buffer
 
     for (int i = 0; i < totalCitas; i++) {
-        if (citas[i].id == citaId) {
+        if (citas[i].id == citaId && strcmp(citas[i].estado, "Programada") == 0) {
             encontrado = 1;
 
-            printf("Modificando la fecha de la cita con ID %d\n", citaId);
-            printf("Fecha actual: %s\n", citas[i].fecha);
-            printf("Ingrese la nueva fecha (YYYY-MM-DD HH:MM): ");
+            printf("Modificando la cita con ID %d\n", citaId);
+            printf("Fecha actual: %d-%d-%d %s\n", citas[i].dia, citas[i].mes, citas[i].anio, citas[i].fecha);
             
-            char nuevaFecha[20];
-            fgets(nuevaFecha, 20, stdin);
-            nuevaFecha[strcspn(nuevaFecha, "\n")] = 0;  // Eliminar el salto de línea
+            // Solicitar la nueva fecha y hora
+            printf("Ingrese el nuevo día (dd): ");
+            scanf("%d", &citas[i].dia);
+            getchar();  // Limpiar el buffer
+            printf("Ingrese el nuevo mes (mm): ");
+            scanf("%d", &citas[i].mes);
+            getchar();  // Limpiar el buffer
+            printf("Ingrese el nuevo año (yyyy): ");
+            scanf("%d", &citas[i].anio);
+            getchar();  // Limpiar el buffer
 
-            if (strlen(nuevaFecha) > 0) {
-                strcpy(citas[i].fecha, nuevaFecha);
-                guardarCitas();
-                printf("Fecha modificada correctamente.\n");
-            } else {
-                printf("No se ingresó una nueva fecha. No se realizaron cambios.\n");
-            }
+            // Solicitar la nueva hora
+            printf("Ingrese la nueva hora (HH:MM): ");
+            fgets(citas[i].fecha, sizeof(citas[i].fecha), stdin);
+            citas[i].fecha[strcspn(citas[i].fecha, "\n")] = '\0';  // Limpiar el salto de línea
+
+            printf("Ingrese el nuevo motivo de la cita: ");
+            fgets(citas[i].motivo, sizeof(citas[i].motivo), stdin);
+            citas[i].motivo[strcspn(citas[i].motivo, "\n")] = '\0';  // Limpiar el salto de línea
+
+            guardarCitas();
+            printf("Cita modificada correctamente.\n");
             return;
         }
     }
 
     if (!encontrado) {
-        printf("No se encontró ninguna cita con el ID especificado.\n");
+        printf("No se encontró ninguna cita con el ID especificado o la cita ya ha sido cancelada.\n");
     }
 }
 
@@ -195,5 +180,21 @@ void actualizarEstadoCita(int medicoId) {
             printf("Estado de la cita actualizado correctamente.\n");
             guardarCitas();  // Asegúrate de tener esta función implementada
         }
+    }
+}
+
+void listarHistorial() {
+    printf("\n======= HISTORIAL DE CITAS =======\n");
+
+    // Recorrer todas las citas y mostrar todas
+    for (int i = 0; i < totalCitas; i++) {
+        printf("ID: %d - Fecha: %d-%d-%d %s - Estado: %s - Motivo: %s\n", 
+                citas[i].id, 
+                citas[i].dia, 
+                citas[i].mes, 
+                citas[i].anio, 
+                citas[i].fecha, 
+                citas[i].estado, 
+                citas[i].motivo);
     }
 }

@@ -5,9 +5,15 @@
 #include "citas.h"
 #include "historial.h"
 #include "logs.h"
+#include "calendario.h"
 
 void mostrarMenuPaciente() {
     int opcion;
+    int paciente_id;
+
+    printf("Ingrese su ID de paciente: ");
+    scanf("%d", &paciente_id);
+    getchar();
 
     do {
         printf("\n======= MENU PACIENTE =======\n");
@@ -23,7 +29,7 @@ void mostrarMenuPaciente() {
 
         switch(opcion) {
             case 1:
-                reservarCita();
+                reservarCitaDesdeCalendario(paciente_id);
                 break;
             case 2:
                 listarCitas();
