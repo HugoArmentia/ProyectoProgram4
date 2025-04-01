@@ -16,11 +16,15 @@ typedef struct {
 
 extern Usuario usuarios[MAX_USUARIOS];
 extern int totalUsuarios;
+extern int usuarioActualId; 
 
 void cargarUsuarios();              
 void guardarUsuarios();
 void registrarUsuario();
 int autenticarUsuario();
 void listarUsuarios();
+void modificarUsuario();
+void eliminarUsuario();
+void listarMedicos();
 
 #endif

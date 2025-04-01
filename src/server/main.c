@@ -8,12 +8,10 @@
 #include <sqlite3.h>
 #include "database.h"
 
-// Variables globales del usuario autenticado
 int usuarioActualId = -1;
 char tipoUsuarioActual[20] = "";
 
 int main() {
-    // Inicializar archivos necesarios
     inicializarArchivos();
     cargarUsuarios();
     cargarLogs();
