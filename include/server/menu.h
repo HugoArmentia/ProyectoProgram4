@@ -1,9 +1,13 @@
 #ifndef MENU_H
 #define MENU_H
 
+<<<<<<< HEAD
 void mostrarMenuPrincipal();
 <<<<<<< HEAD
 void mostrarMenuPaciente();
+=======
+// Funciones del menú principal
+>>>>>>> f2a9c839496782ec04ea612938c67c3fb6d2e685
 void mostrarMenuMedico();
 void mostrarMenuAdmin();
 =======
