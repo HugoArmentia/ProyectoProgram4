@@ -114,21 +114,6 @@ void actualizarEstadoCita(int medicoId) {
         if (citas[i].id == citaId && citas[i].medico_id == medicoId) {
             strcpy(citas[i].estado, nuevoEstado);
             printf("Estado de la cita actualizado correctamente.\n");
-
-            // Guardar cambios en el archivo de citas
-            guardarCitas();
-
-            // Registrar en el log la actualización de estado
-            char descripcion[200];
-            sprintf(descripcion, "Cita %d actualizada a estado: %s", citaId, nuevoEstado);
-            registrarLog("Actualizar Cita", descripcion, medicoId);
-
-            citaEncontrada = 1;
-            break;
+            guardarCitas();  // Asegúrate de tener esta función implementada
         }
     }
-
-    if (!citaEncontrada) {
-        printf("No se encontró la cita o no pertenece a este médico.\n");
-    }
-}
