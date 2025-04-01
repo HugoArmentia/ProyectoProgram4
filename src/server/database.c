@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include "database.h"
 
-// Inicializa archivos si no existen (sin conflictos)
 void inicializarArchivos() {
     FILE *archivo;
 

@@ -64,47 +64,39 @@ void registrarUsuario() {
     Usuario nuevoUsuario;
     nuevoUsuario.id = totalUsuarios + 1;
 
-    // Pedir nombre de usuario
     printf("Ingrese el nombre del usuario: ");
     fgets(nuevoUsuario.nombre, 50, stdin);
     nuevoUsuario.nombre[strcspn(nuevoUsuario.nombre, "\n")] = 0;
     limpiarBuffer();
 
-    // Pedir contraseña
     printf("Ingrese la contraseña: ");
     fgets(nuevoUsuario.password, 50, stdin);
     nuevoUsuario.password[strcspn(nuevoUsuario.password, "\n")] = 0;
 
-    // Pedir tipo de usuario
     printf("Ingrese el tipo de usuario: ");
     fgets(nuevoUsuario.tipo, 20, stdin);
     nuevoUsuario.tipo[strcspn(nuevoUsuario.tipo, "\n")] = 0;
 
-    // Pedir email
     printf("Ingrese el email: ");
     fgets(nuevoUsuario.email, 50, stdin);
     nuevoUsuario.email[strcspn(nuevoUsuario.email, "\n")] = 0;
 
-    // Pedir teléfono
     printf("Ingrese el teléfono: ");
     fgets(nuevoUsuario.telefono, 15, stdin);
     nuevoUsuario.telefono[strcspn(nuevoUsuario.telefono, "\n")] = 0;
 
-    // Pedir dirección
     printf("Ingrese la dirección: ");
     fgets(nuevoUsuario.direccion, 100, stdin);
     nuevoUsuario.direccion[strcspn(nuevoUsuario.direccion, "\n")] = 0;
 
-    // Pedir fecha de registro
     printf("Ingrese la fecha de registro (YYYY-MM-DD): ");
     fgets(nuevoUsuario.fecha_registro, 20, stdin);
     nuevoUsuario.fecha_registro[strcspn(nuevoUsuario.fecha_registro, "\n")] = 0;
 
-    // Añadir el nuevo usuario al array de usuarios
     usuarios[totalUsuarios] = nuevoUsuario;
     totalUsuarios++;
     
-    guardarUsuarios();  // Asegúrate de llamar a esta función después de registrar el usuario
+    guardarUsuarios();
 
     printf("Usuario registrado correctamente.\n");
 }

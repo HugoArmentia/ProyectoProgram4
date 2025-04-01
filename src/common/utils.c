@@ -5,7 +5,6 @@
 #include <ctype.h>
 #include "utils.h"
 
-// Obtener la fecha y hora actual en formato: "YYYY-MM-DD HH:MM:SS"
 void obtenerFechaHoraActual(char *fechaHora) {
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
@@ -14,7 +13,6 @@ void obtenerFechaHoraActual(char *fechaHora) {
             tm.tm_hour, tm.tm_min, tm.tm_sec);
 }
 
-// Limpiar el buffer de entrada
 void limpiarBuffer() {
     int c;
     while ((c = getchar()) != '\n' && c != EOF);

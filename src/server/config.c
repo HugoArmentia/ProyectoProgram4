@@ -5,9 +5,8 @@
 
 #define MAX_CONFIG_LINE 200
 
-Config configuracion;  // Variable global que contiene la configuración actual
+Config configuracion;
 
-// Cargar la configuración desde un archivo de texto
 void cargarConfiguracion(const char *rutaArchivo) {
     FILE *archivo = fopen(rutaArchivo, "r");
     if (archivo == NULL) {
@@ -37,7 +36,6 @@ void cargarConfiguracion(const char *rutaArchivo) {
     printf("Configuración cargada correctamente.\n");
 }
 
-// Guardar la configuración en un archivo de texto
 void guardarConfiguracion(const char *rutaArchivo) {
     FILE *archivo = fopen(rutaArchivo, "w");
     if (archivo == NULL) {

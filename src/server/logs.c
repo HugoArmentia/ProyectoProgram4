@@ -2,12 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include "logs.h"
-#include "utils.h"  // Asegúrate de tener esta cabecera bien definida en include/common/utils.h
+#include "utils.h"
 
-LogActividad logs[MAX_LOGS];  // Array de logs
-int totalLogs = 0;             // Número total de logs registrados
+LogActividad logs[MAX_LOGS];
+int totalLogs = 0;
 
-// Cargar logs desde el archivo
 void cargarLogs() {
     FILE *archivo = fopen("data/logs_actividades.txt", "r");
     if (archivo == NULL) {
@@ -29,7 +28,6 @@ void cargarLogs() {
     fclose(archivo);
 }
 
-// Guardar logs en el archivo
 void guardarLogs() {
     FILE *archivo = fopen("data/logs_actividades.txt", "w");
     if (archivo == NULL) {
@@ -49,7 +47,6 @@ void guardarLogs() {
     fclose(archivo);
 }
 
-// Registrar un nuevo log en el sistema
 void registrarLog(const char *tipo_evento, const char *descripcion, int usuario_id) {
     if (totalLogs >= MAX_LOGS) {
         printf("Se alcanzó el límite máximo de logs registrados.\n");
@@ -66,16 +63,14 @@ void registrarLog(const char *tipo_evento, const char *descripcion, int usuario_
 
     nuevoLog.usuario_id = usuario_id;
 
-    // Obtener la fecha y hora actual desde utils.c
     obtenerFechaHoraActual(nuevoLog.fecha_evento);
 
     logs[totalLogs] = nuevoLog;
     totalLogs++;
 
-    guardarLogs();  // Guardar el nuevo log en el archivo
+    guardarLogs();
 }
 
-// Mostrar todos los logs en consola
 void listarLogs() {
     printf("======= LISTADO DE LOGS =======\n");
 
