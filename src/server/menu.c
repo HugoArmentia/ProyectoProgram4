@@ -6,7 +6,6 @@
 #include "historial.h"
 #include "logs.h"
 
-// Menú exclusivo para Pacientes
 void mostrarMenuPaciente() {
     int opcion;
 
@@ -24,16 +23,19 @@ void mostrarMenuPaciente() {
 
         switch(opcion) {
             case 1:
-                crearCita();  // Implementar esta función
+                reservarCita();
                 break;
             case 2:
-                listarCitas();  // Implementar esta función
+                listarCitas();
+                break;
+            case 3:
+                modificarCita();
                 break;
             case 4:
-                cancelarCita();  // Implementar esta función
+                cancelarCita();
                 break;
             case 5:
-                listarHistorial();  // Implementar esta función
+                listarHistorial();
                 break;
             case 0:
                 printf("Cerrando sesión de Paciente...\n");
@@ -44,22 +46,21 @@ void mostrarMenuPaciente() {
     } while(opcion != 0);
 }
 
-// menu medicos
-void mostrarMenuMedico(int medicoId) {  
+void mostrarMenuMedico() {
     int opcion;
 
     do {
         printf("\n======= MENU MEDICO =======\n");
         printf("1. Consultar citas asignadas\n");
         printf("2. Ver historial de citas\n");
-        printf("3. Actualizar estado de una cita\n");
         printf("0. Cerrar sesión\n");
         printf("Seleccione una opción: ");
         scanf("%d", &opcion);
-        getchar();  // Limpiar el buffer
+        getchar();
 
         switch(opcion) {
             case 1:
+<<<<<<< HEAD
                 listarCitasMedico(medicoId);  
                 break;
             case 2:
@@ -67,9 +68,15 @@ void mostrarMenuMedico(int medicoId) {
                 break;
             case 3:
                 actualizarEstadoCita(medicoId);  
+=======
+                listarCitas();
+                break;
+            case 2:
+                listarHistorial();
+>>>>>>> 1a72b8dbf1fe41fb65028626b4875b0996d9efcf
                 break;
             case 0:
-                printf("Cerrando sesión de Médico...\n");
+                printf("Cerrando sesión de Medico...\n");
                 return;
             default:
                 printf("Opción no válida. Intente nuevamente.\n");
@@ -77,7 +84,6 @@ void mostrarMenuMedico(int medicoId) {
     } while(opcion != 0);
 }
 
-// Menú exclusivo para Administradores
 void mostrarMenuAdmin() {
     int opcion;
 
@@ -86,6 +92,8 @@ void mostrarMenuAdmin() {
         printf("1. Listar Usuarios\n");
         printf("2. Ver Logs\n");
         printf("3. Crear Usuario Nuevo\n");
+        printf("4. Modificar Usuario\n");
+        printf("5. Eliminar Usuario\n");
         printf("0. Cerrar sesión\n");
         printf("Seleccione una opción: ");
         scanf("%d", &opcion);
@@ -101,6 +109,12 @@ void mostrarMenuAdmin() {
             case 3:
                 registrarUsuario();
                 break;
+            case 4:
+                modificarUsuario();  // Nueva función que vamos a implementar
+                break;
+            case 5:
+                eliminarUsuario();  // Nueva función que vamos a implementar
+                break;
             case 0:
                 printf("Cerrando sesión de Administrador...\n");
                 return;
@@ -109,3 +123,5 @@ void mostrarMenuAdmin() {
         }
     } while(opcion != 0);
 }
+
+

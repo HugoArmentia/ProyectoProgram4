@@ -18,7 +18,8 @@ extern int totalCitas;
 // Funciones para manejo de citas
 void cargarCitas();
 void guardarCitas();
-void crearCita();
+void reservarCita();
+void modificarCita();
 void cancelarCita();
 void listarCitas();
 void listarCitasMedico(int medicoId);
