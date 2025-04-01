@@ -13,14 +13,12 @@ typedef struct {
     char fecha_evento[20];
 } LogActividad;
 
-// Declaraciones globales para acceso a logs
-extern LogActividad logs[MAX_LOGS];  // Array de logs
-extern int totalLogs;                 // Número total de logs registrados
+extern LogActividad logs[MAX_LOGS]; 
+extern int totalLogs;              
 
-// Funciones para manipulación de logs
-void cargarLogs();                    // Cargar logs desde archivo
-void guardarLogs();                   // Guardar logs en archivo
-void registrarLog(const char *tipo_evento, const char *descripcion, int usuario_id); // Añadir un nuevo log
-void listarLogs();                     // Mostrar todos los logs en consola
+void cargarLogs();                
+void guardarLogs();                  
+void registrarLog(const char *tipo_evento, const char *descripcion, int usuario_id); 
+void listarLogs();               
 
 #endif

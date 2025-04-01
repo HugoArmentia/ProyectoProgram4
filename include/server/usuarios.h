@@ -17,8 +17,7 @@ typedef struct {
 extern Usuario usuarios[MAX_USUARIOS];
 extern int totalUsuarios;
 
-// Funciones relacionadas con usuarios
-void cargarUsuarios();               // Función sin parámetros (sin conflictos)
+void cargarUsuarios();              
 void guardarUsuarios();
 void registrarUsuario();
 int autenticarUsuario();

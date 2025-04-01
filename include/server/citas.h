@@ -23,8 +23,5 @@ void cancelarCita();
 void listarCitas();
 void listarCitasMedico(int medicoId);
 void actualizarEstadoCita(int medicoId);
-void cargarCitas();
-void guardarCitas();
-
 
 #endif
