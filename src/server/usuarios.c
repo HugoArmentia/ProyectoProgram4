@@ -33,9 +33,9 @@ void cargarUsuarios() {
 }
 
 void guardarUsuarios() {
-    FILE *archivo = fopen(RUTA_USUARIOS, "w");
+    FILE *archivo = fopen("data/usuarios.txt", "w");  // Abre el archivo en modo escritura
     if (archivo == NULL) {
-        printf("Error al guardar el archivo de usuarios.\n");
+        printf("No se pudo abrir el archivo de usuarios para escribir.\n");
         return;
     }
 
@@ -52,9 +52,10 @@ void guardarUsuarios() {
     }
 
     fclose(archivo);
+    printf("Usuarios guardados correctamente.\n");
 }
 
-void registrarUsuario() {
+void registrarUsuario() { 
     if (totalUsuarios >= MAX_USUARIOS) {
         printf("Límite máximo de usuarios alcanzado.\n");
         return;
@@ -62,16 +63,49 @@ void registrarUsuario() {
 
     Usuario nuevoUsuario;
     nuevoUsuario.id = totalUsuarios + 1;
+
+    // Pedir nombre de usuario
     printf("Ingrese el nombre del usuario: ");
     fgets(nuevoUsuario.nombre, 50, stdin);
     nuevoUsuario.nombre[strcspn(nuevoUsuario.nombre, "\n")] = 0;
+    limpiarBuffer();
 
+    // Pedir contraseña
     printf("Ingrese la contraseña: ");
     fgets(nuevoUsuario.password, 50, stdin);
     nuevoUsuario.password[strcspn(nuevoUsuario.password, "\n")] = 0;
 
+    // Pedir tipo de usuario
+    printf("Ingrese el tipo de usuario: ");
+    fgets(nuevoUsuario.tipo, 20, stdin);
+    nuevoUsuario.tipo[strcspn(nuevoUsuario.tipo, "\n")] = 0;
+
+    // Pedir email
+    printf("Ingrese el email: ");
+    fgets(nuevoUsuario.email, 50, stdin);
+    nuevoUsuario.email[strcspn(nuevoUsuario.email, "\n")] = 0;
+
+    // Pedir teléfono
+    printf("Ingrese el teléfono: ");
+    fgets(nuevoUsuario.telefono, 15, stdin);
+    nuevoUsuario.telefono[strcspn(nuevoUsuario.telefono, "\n")] = 0;
+
+    // Pedir dirección
+    printf("Ingrese la dirección: ");
+    fgets(nuevoUsuario.direccion, 100, stdin);
+    nuevoUsuario.direccion[strcspn(nuevoUsuario.direccion, "\n")] = 0;
+
+    // Pedir fecha de registro
+    printf("Ingrese la fecha de registro (YYYY-MM-DD): ");
+    fgets(nuevoUsuario.fecha_registro, 20, stdin);
+    nuevoUsuario.fecha_registro[strcspn(nuevoUsuario.fecha_registro, "\n")] = 0;
+
+    // Añadir el nuevo usuario al array de usuarios
     usuarios[totalUsuarios] = nuevoUsuario;
     totalUsuarios++;
+    
+    guardarUsuarios();  // Asegúrate de llamar a esta función después de registrar el usuario
+
     printf("Usuario registrado correctamente.\n");
 }
 
@@ -82,6 +116,7 @@ int autenticarUsuario() {
     printf("Nombre de usuario: ");
     fgets(nombre, 50, stdin);
     nombre[strcspn(nombre, "\n")] = 0;
+    limpiarBuffer();
 
     printf("Contraseña: ");
     fgets(password, 50, stdin);

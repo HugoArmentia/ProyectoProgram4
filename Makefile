@@ -1,34 +1,41 @@
-# Makefile para compilar el proyecto SRCM
-
+# Compilador
 CC = gcc
+
+# Flags de compilación
 CFLAGS = -Wall -Wextra -Iinclude/server -Iinclude/common
-LDFLAGS = -lm
-TARGET = SRCM
 
-# Archivos fuente (src/server y src/common)
-SRC_SERVER = src/server/main.c src/server/menu.c src/server/usuarios.c src/server/citas.c \
-             src/server/historial.c src/server/logs.c src/server/database.c src/server/config.c
+# Archivos fuente
+SRC = src/server/main.c \
+      src/server/menu.c \
+      src/server/usuarios.c \
+      src/server/citas.c \
+      src/server/historial.c \
+      src/server/logs.c \
+      src/server/database.c \
+      src/server/config.c \
+      src/common/utils.c
 
-SRC_COMMON = src/common/utils.c
+# Archivos objeto
+OBJ = $(SRC:.c=.o)
 
-# Archivos objeto generados por la compilación
-OBJ_SERVER = $(SRC_SERVER:.c=.o)
-OBJ_COMMON = $(SRC_COMMON:.c=.o)
+# Nombre del ejecutable
+EXEC = SRCM.exe
 
-# Regla por defecto para compilar todo el proyecto
-all: $(TARGET)
+# Regla por defecto
+all: $(EXEC)
 
-$(TARGET): $(OBJ_SERVER) $(OBJ_COMMON)
-	$(CC) $(OBJ_SERVER) $(OBJ_COMMON) -o $(TARGET) $(LDFLAGS)
+# Regla para compilar el ejecutable
+$(EXEC): $(OBJ)
+	$(CC) $(OBJ) -o $(EXEC)
 
-# Regla para compilar archivos .c a archivos .o
+# Regla para compilar cada archivo .c a .o
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Limpiar archivos generados
+# Regla para limpiar archivos compilados
 clean:
-	rm -f $(OBJ_SERVER) $(OBJ_COMMON) $(TARGET)
+	del /Q $(OBJ) $(EXEC) 2>nul || rm -f $(OBJ) $(EXEC)
 
-# Ejecutar el programa
-run:
-	./$(TARGET)
+# Regla para limpiar archivos objeto
+cleanobj:
+	del /Q $(OBJ) 2>nul || rm -f $(OBJ)
