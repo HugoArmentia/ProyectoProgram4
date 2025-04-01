@@ -134,14 +134,7 @@ void listarCitasMedico(int medicoId) {
     }
 }
 
-<<<<<<< HEAD
 void modificarCita() {
-=======
-
-
-
-void modificarCitaMedico(int medicoId) {
->>>>>>> 52d09520335cb9c097cbcb8da76e45d52463ad26
     int citaId;
     char nuevaFecha[20];
 
@@ -151,84 +144,51 @@ void modificarCitaMedico(int medicoId) {
 
     printf("Ingrese la nueva fecha para la cita (YYYY-MM-DD HH:MM): ");
     fgets(nuevaFecha, sizeof(nuevaFecha), stdin);
-    nuevaFecha[strcspn(nuevaFecha, "\n")] = 0;
+    nuevaFecha[strcspn(nuevaFecha, "\n")] = 0;  // Eliminar salto de línea
 
-    sqlite3_stmt *stmt;
-    const char *sql = "UPDATE citas SET fecha = ? WHERE id = ? AND medico_id = ?;";
-
-    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) == SQLITE_OK) {
-        sqlite3_bind_text(stmt, 1, nuevaFecha, -1, SQLITE_STATIC);
-        sqlite3_bind_int(stmt, 2, citaId);
-        sqlite3_bind_int(stmt, 3, medicoId);
-
-        if (sqlite3_step(stmt) == SQLITE_DONE) {
+    int citaEncontrada = 0;
+    for (int i = 0; i < totalCitas; i++) {
+        if (citas[i].id == citaId) {
+            strcpy(citas[i].fecha, nuevaFecha);  // Modificar la fecha en la estructura
             printf("Cita modificada correctamente.\n");
-        } else {
-            printf("Error al modificar la cita: %s\n", sqlite3_errmsg(db));
+            citaEncontrada = 1;
+            break;
         }
-        sqlite3_finalize(stmt);
-    } else {
-        printf("Error al preparar la consulta: %s\n", sqlite3_errmsg(db));
+    }
+
+    if (!citaEncontrada) {
+        printf("No se encontró ninguna cita con el ID especificado.\n");
     }
 }
 
-<<<<<<< HEAD
-void actualizarEstadoCita(int medicoId) { 
+void actualizarEstadoCita(int medicoId) {
     int citaId;
     char nuevoEstado[20];
-    int citaEncontrada = 0;  // Declara citaEncontrada como un entero
+    int citaEncontrada = 0;
 
     printf("Ingrese el ID de la cita que desea actualizar: ");
-=======
-
-
-void cancelarCitaMedico(int medicoId) {
-    int citaId;
-
-    printf("Ingrese el ID de la cita que desea cancelar: ");
->>>>>>> 52d09520335cb9c097cbcb8da76e45d52463ad26
     scanf("%d", &citaId);
     getchar();  // Limpiar el buffer
 
-<<<<<<< HEAD
     printf("Ingrese el nuevo estado (Programada / Completada / Cancelada): ");
     fgets(nuevoEstado, 20, stdin);
     nuevoEstado[strcspn(nuevoEstado, "\n")] = '\0';  // Eliminar salto de línea
 
     for (int i = 0; i < totalCitas; i++) {
         if (citas[i].id == citaId && citas[i].medico_id == medicoId) {
-            strcpy(citas[i].estado, nuevoEstado);
+            strcpy(citas[i].estado, nuevoEstado);  // Modificar el estado en la estructura
             printf("Estado de la cita actualizado correctamente.\n");
-
-            guardarCitas();
 
             // Registrar el cambio en el log
             char descripcion[200];
             sprintf(descripcion, "Cita %d actualizada a estado: %s", citaId, nuevoEstado);
             registrarLog("Actualizar Cita", descripcion, medicoId);
 
-            citaEncontrada = 1;  // Ahora citaEncontrada está declarada correctamente
+            citaEncontrada = 1;
             break;
-=======
-    sqlite3_stmt *stmt;
-    const char *sql = "DELETE FROM citas WHERE id = ? AND medico_id = ?;";
-
-    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) == SQLITE_OK) {
-        sqlite3_bind_int(stmt, 1, citaId);
-        sqlite3_bind_int(stmt, 2, medicoId);
-
-        if (sqlite3_step(stmt) == SQLITE_DONE) {
-            printf("Cita cancelada correctamente.\n");
-        } else {
-            printf("Error al cancelar la cita: %s\n", sqlite3_errmsg(db));
->>>>>>> 52d09520335cb9c097cbcb8da76e45d52463ad26
         }
-        sqlite3_finalize(stmt);
-    } else {
-        printf("Error al preparar la consulta: %s\n", sqlite3_errmsg(db));
     }
 
-    // Si no se encontró la cita
     if (!citaEncontrada) {
         printf("No se encontró ninguna cita con el ID especificado.\n");
     }
@@ -249,33 +209,3 @@ void listarHistorial() {
                 citas[i].motivo);
     }
 }
-
-
-void listarHistorialMedico(int medicoId) {
-    sqlite3_stmt *stmt;
-    const char *sql = "SELECT id, paciente_id, fecha, estado, motivo FROM historial_citas WHERE medico_id = ?;";
-
-    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) == SQLITE_OK) {
-        sqlite3_bind_int(stmt, 1, medicoId);
-
-        printf("======= HISTORIAL DE CITAS =======\n");
-        while (sqlite3_step(stmt) == SQLITE_ROW) {
-            int citaId = sqlite3_column_int(stmt, 0);
-            int pacienteId = sqlite3_column_int(stmt, 1);
-            const char *fecha = (const char*)sqlite3_column_text(stmt, 2);
-            const char *estado = (const char*)sqlite3_column_text(stmt, 3);
-            const char *motivo = (const char*)sqlite3_column_text(stmt, 4);
-
-            printf("Cita ID: %d\n", citaId);
-            printf("Paciente ID: %d\n", pacienteId);
-            printf("Fecha: %s\n", fecha);
-            printf("Estado: %s\n", estado);
-            printf("Motivo: %s\n", motivo);
-            printf("-------------------------\n");
-        }
-        sqlite3_finalize(stmt);
-    } else {
-        printf("Error al obtener el historial: %s\n", sqlite3_errmsg(db));
-    }
-}
-
