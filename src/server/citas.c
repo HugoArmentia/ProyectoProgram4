@@ -117,3 +117,4 @@ void actualizarEstadoCita(int medicoId) {
             guardarCitas();  // Asegúrate de tener esta función implementada
         }
     }
+}

@@ -67,7 +67,6 @@ void registrarUsuario() {
     printf("Ingrese el nombre del usuario: ");
     fgets(nuevoUsuario.nombre, 50, stdin);
     nuevoUsuario.nombre[strcspn(nuevoUsuario.nombre, "\n")] = 0;
-    limpiarBuffer();
 
     printf("Ingrese la contraseña: ");
     fgets(nuevoUsuario.password, 50, stdin);
@@ -108,7 +107,6 @@ int autenticarUsuario() {
     printf("Nombre de usuario: ");
     fgets(nombre, 50, stdin);
     nombre[strcspn(nombre, "\n")] = 0;
-    limpiarBuffer();
 
     printf("Contraseña: ");
     fgets(password, 50, stdin);
@@ -145,24 +143,69 @@ void listarUsuarios() {
     }
     
 }
-//Funcion modificar un usuario
+
 void modificarUsuario() {
     int userId;
+    listarUsuarios();  // Mostrar todos los usuarios para elegir
     printf("Ingrese el ID del usuario que desea modificar: ");
     scanf("%d", &userId);
-    getchar();
+    getchar();  // Limpiar el buffer
 
-   
-    printf("Usuario con ID %d modificado exitosamente.\n", userId);
+    for (int i = 0; i < totalUsuarios; i++) {
+        if (usuarios[i].id == userId) {
+            printf("Modificando usuario con ID %d:\n", userId);
+
+            printf("Ingrese el nuevo nombre del usuario: ");
+            fgets(usuarios[i].nombre, 50, stdin);
+            usuarios[i].nombre[strcspn(usuarios[i].nombre, "\n")] = 0;
+
+            printf("Ingrese el nuevo tipo de usuario: ");
+            fgets(usuarios[i].tipo, 20, stdin);
+            usuarios[i].tipo[strcspn(usuarios[i].tipo, "\n")] = 0;
+
+            printf("Ingrese el nuevo email: ");
+            fgets(usuarios[i].email, 50, stdin);
+            usuarios[i].email[strcspn(usuarios[i].email, "\n")] = 0;
+
+            printf("Ingrese el nuevo telefono: ");
+            fgets(usuarios[i].telefono, 15, stdin);
+            usuarios[i].telefono[strcspn(usuarios[i].telefono, "\n")] = 0;
+
+            printf("Ingrese la nueva direccion: ");
+            fgets(usuarios[i].direccion, 100, stdin);
+            usuarios[i].direccion[strcspn(usuarios[i].direccion, "\n")] = 0;
+
+            // Permitir cambiar la contraseña
+            printf("Ingrese la nueva contraseña: ");
+            fgets(usuarios[i].password, 50, stdin);
+            usuarios[i].password[strcspn(usuarios[i].password, "\n")] = 0;
+
+            guardarUsuarios();
+            printf("Usuario con ID %d modificado exitosamente.\n", userId);
+            return;
+        }
+    }
+    printf("No se encontró un usuario con el ID especificado.\n");
 }
 
-// Función para eliminar un usuario
 void eliminarUsuario() {
     int userId;
+    listarUsuarios();  // Mostrar todos los usuarios para elegir
     printf("Ingrese el ID del usuario que desea eliminar: ");
     scanf("%d", &userId);
-    getchar();
+    getchar();  // Limpiar el buffer
 
-    
-    printf("Usuario con ID %d eliminado exitosamente.\n", userId);
+    for (int i = 0; i < totalUsuarios; i++) {
+        if (usuarios[i].id == userId) {
+            // Desplazar todos los usuarios hacia la izquierda para eliminar
+            for (int j = i; j < totalUsuarios - 1; j++) {
+                usuarios[j] = usuarios[j + 1];
+            }
+            totalUsuarios--;
+            guardarUsuarios();
+            printf("Usuario con ID %d eliminado exitosamente.\n", userId);
+            return;
+        }
+    }
+    printf("No se encontró un usuario con el ID especificado.\n");
 }

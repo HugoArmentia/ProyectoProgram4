@@ -23,7 +23,7 @@ void guardarUsuarios();
 void registrarUsuario();
 int autenticarUsuario();
 void listarUsuarios();
-void modificarUsuario(int id);
-void eliminarUsuario(int id);
+void modificarUsuario();
+void eliminarUsuario();
 
 #endif
