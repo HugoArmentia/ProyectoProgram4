@@ -1,2 +1,6 @@
+<<<<<<< HEAD
 1,Josu,Paciente,asd,ad,asd,asd,asd
 2,Josu,,asd,,,,
+=======
+1,,paciente,123,maikamsaima.com,12345,pollas,‡1-2-3
+>>>>>>> 8c2245aa7d554e2e6c659522b72638a9235d6d1e

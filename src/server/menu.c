@@ -41,6 +41,7 @@ void mostrarMenuPaciente() {
             default:
                 printf("Opción no válida. Intente nuevamente.\n");
         }
+<<<<<<< HEAD
     } while(opcion != 0);
 }
 
@@ -104,4 +105,9 @@ void mostrarMenuAdmin() {
                 printf("Opción no válida. Intente nuevamente.\n");
         }
     } while(opcion != 0);
+=======
+    } while (opcion != 8);
+
+>>>>>>> 8c2245aa7d554e2e6c659522b72638a9235d6d1e
 }
+
