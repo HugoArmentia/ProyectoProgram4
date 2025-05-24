@@ -58,23 +58,34 @@ void mostrarCalendarioMensual(int mes, int anio) {
     printf("\nCalendario para %d-%d\n", mes, anio);
     printf("  Lu Ma Mi Ju Vi Sa Do\n");
 
-    struct tm t = {0};
-    t.tm_mday = 1;
-    t.tm_mon = mes - 1;
-    t.tm_year = anio - 1900;
-    mktime(&t);
+    time_t t = time(NULL);
+    struct tm *fechaActual = localtime(&t);
+    int diaHoy = fechaActual->tm_mday;
+    int mesActual = fechaActual->tm_mon + 1;
+    int anioActual = fechaActual->tm_year + 1900;
 
-    int diaInicio = t.tm_wday == 0 ? 7 : t.tm_wday;
+    struct tm t_ini = {0};
+    t_ini.tm_mday = 1;
+    t_ini.tm_mon = mes - 1;
+    t_ini.tm_year = anio - 1900;
+    mktime(&t_ini);
+
+    int diaInicio = t_ini.tm_wday == 0 ? 7 : t_ini.tm_wday;
     int diasEnMes = (mes == 2) ? (anio % 4 == 0 && (anio % 100 != 0 || anio % 400 == 0) ? 29 : 28) :
                      (mes == 4 || mes == 6 || mes == 9 || mes == 11 ? 30 : 31);
 
     for (int i = 1; i < diaInicio; i++) printf("   ");
 
     for (int dia = 1; dia <= diasEnMes; dia++) {
-        int reservado = 0;
+        if (anio == anioActual && mes == mesActual && dia < diaHoy) {
+            printf(" -- ");  // Día pasado: no disponible
+            continue;
+        }
 
+        int reservado = 0;
         const char *sql = "SELECT COUNT(*) FROM citas WHERE dia = ? AND mes = ? AND anio = ? AND estado = 'Programada';";
         sqlite3_stmt *stmt;
+
         if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) == SQLITE_OK) {
             sqlite3_bind_int(stmt, 1, dia);
             sqlite3_bind_int(stmt, 2, mes);
@@ -88,9 +99,9 @@ void mostrarCalendarioMensual(int mes, int anio) {
         }
 
         if (reservado)
-            printf("[%2d]", dia);  
+            printf("[%2d]", dia);
         else
-            printf(" %2d ", dia);  
+            printf(" %2d ", dia);
 
         if ((dia + diaInicio - 1) % 7 == 0 || dia == diasEnMes) printf("\n");
     }
@@ -102,7 +113,7 @@ void reservarCitaDesdeCalendario(int paciente_id) {
 
     mostrarCalendariosFuturos();
 
-    printf("Ingrese el mes que desea reservar (1 - 6): ");
+    printf("Ingrese el mes que desea reservar : ");
     scanf("%d", &mes);
     getchar();
 
@@ -113,11 +124,23 @@ void reservarCitaDesdeCalendario(int paciente_id) {
 
     time_t t = time(NULL);
     struct tm *fechaActual = localtime(&t);
-    anio = fechaActual->tm_year + 1900;
+    int diaHoy = fechaActual->tm_mday;
+    int mesActual = fechaActual->tm_mon + 1;
+    int anioActual = fechaActual->tm_year + 1900;
+
+    anio = anioActual; 
 
     printf("Ingrese el día que desea reservar: ");
     scanf("%d", &dia);
     getchar();
+
+    if ((anio < anioActual) ||
+        (anio == anioActual && mes < mesActual) ||
+        (anio == anioActual && mes == mesActual && dia < diaHoy)) {
+        printf("No puedes reservar una cita en una fecha anterior a hoy.\n");
+        return;
+    }
+
 
     mostrarHorasDisponibles(dia, mes, anio);
 
@@ -138,6 +161,33 @@ void reservarCitaDesdeCalendario(int paciente_id) {
     printf("Ingrese el motivo de la cita: ");
     fgets(motivo, sizeof(motivo), stdin);
     motivo[strcspn(motivo, "\n")] = 0;
+
+    // Validar si ya hay una cita en esa fecha y hora con el mismo médico
+    const char *checkSql = "SELECT COUNT(*) FROM citas "
+                        "WHERE dia = ? AND mes = ? AND anio = ? AND fecha = ? AND medico_id = ? AND estado = 'Programada';";
+
+    sqlite3_stmt *checkStmt;
+    if (sqlite3_prepare_v2(db, checkSql, -1, &checkStmt, NULL) != SQLITE_OK) {
+        printf("Error al preparar la consulta de comprobación: %s\n", sqlite3_errmsg(db));
+        return;
+    }
+
+    sqlite3_bind_int(checkStmt, 1, dia);
+    sqlite3_bind_int(checkStmt, 2, mes);
+    sqlite3_bind_int(checkStmt, 3, anio);
+    sqlite3_bind_text(checkStmt, 4, horas[indiceHora], -1, SQLITE_STATIC);
+    sqlite3_bind_int(checkStmt, 5, medico_id);
+
+    int ocupado = 0;
+    if (sqlite3_step(checkStmt) == SQLITE_ROW) {
+        ocupado = sqlite3_column_int(checkStmt, 0);
+    }
+    sqlite3_finalize(checkStmt);
+
+    if (ocupado > 0) {
+        printf("⚠️ El médico ya tiene una cita en esa hora. Elija otra hora.\n");
+        return;
+    }
 
     const char *sql = "INSERT INTO citas (paciente_id, medico_id, fecha, estado, motivo, dia, mes, anio, fecha_modificacion) "
                       "VALUES (?, ?, ?, 'Programada', ?, ?, ?, ?, datetime('now'));";

@@ -11,8 +11,6 @@ void crearTablas() {
     const char *sql =
         "BEGIN TRANSACTION;"
 
-        "DROP TABLE IF EXISTS citas;" 
-
         "CREATE TABLE IF NOT EXISTS Usuario ("
         "id INTEGER PRIMARY KEY AUTOINCREMENT,"
         "nombre TEXT NOT NULL,"

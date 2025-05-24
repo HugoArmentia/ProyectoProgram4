@@ -78,7 +78,6 @@ void mostrarMenuMedico() {
                 break;
             case 2:
                 registrarLog("Medico", "Consultó su historial de citas", medicoId);
-                listarHistorial();
                 listarHistorialMedico(medicoId);
                 break;
             case 3:
