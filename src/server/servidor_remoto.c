@@ -68,6 +68,7 @@ int registrar_usuario(const char *nombre, const char *tipo, const char *pass) {
 
 void manejar_comando(SOCKET clientSocket, char *comando) {
     limpiar_buffer(comando);
+    printf("[DEBUG] Comando recibido: '%s'\n", comando);
     char *cmd = strtok(comando, " ");
     if (!cmd) { enviar(clientSocket, "Comando no reconocido\n"); return; }
 

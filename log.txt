@@ -1,0 +1,4 @@
+[2025-05-24 19:25:24] Registro de usuario correcto
+[2025-05-24 19:25:26] LOGIN correcto
+[2025-05-24 19:26:16] Registro de usuario correcto
+[2025-05-24 19:26:19] LOGIN correcto

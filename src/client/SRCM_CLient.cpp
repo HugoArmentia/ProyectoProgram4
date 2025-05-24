@@ -37,7 +37,8 @@ bool conectarAlServidor(const string& ip, int puerto) {
 }
 
 void enviarComando(const string& comando) {
-    send(clientSocket, comando.c_str(), comando.length(), 0);
+    string cmd = comando + "\n";
+    send(clientSocket, cmd.c_str(), cmd.length(), 0);
 }
 
 string recibirRespuesta() {

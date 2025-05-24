@@ -4,6 +4,7 @@
         "stdio.h": "c",
         "sqlite3.h": "c",
         "database.h": "c",
-        "historial.h": "c"
+        "historial.h": "c",
+        "ostream": "cpp"
     }
 }
