@@ -12,21 +12,46 @@ const char *horas[] = {"08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11
                       "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30",
                       "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30"};
 
+#include <sqlite3.h>
+#include "database.h"
+
+extern const char *horas[];  // declaramos el array de horas si está definido en otro archivo
+
 void mostrarHorasDisponibles(int dia, int mes, int anio) {
     printf("\nHoras disponibles para %d-%d-%d:\n", dia, mes, anio);
 
-    for (int i = 0; i < HORAS_DISPONIBLES; i++) {
-        int disponible = 1;
+    const char *sql = "SELECT fecha FROM citas WHERE dia = ? AND mes = ? AND anio = ? AND estado = 'Programada';";
+    sqlite3_stmt *stmt;
+    char horasReservadas[HORAS_DISPONIBLES][10] = {0};
 
-        for (int j = 0; j < totalCitas; j++) {
-            if (citas[j].dia == dia && citas[j].mes == mes && citas[j].anio == anio && strcmp(citas[j].fecha, horas[i]) == 0 && strcmp(citas[j].estado, "Programada") == 0) {
-                disponible = 0;
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        printf("Error al preparar consulta de horas: %s\n", sqlite3_errmsg(db));
+        return;
+    }
+
+    sqlite3_bind_int(stmt, 1, dia);
+    sqlite3_bind_int(stmt, 2, mes);
+    sqlite3_bind_int(stmt, 3, anio);
+
+    int usadas[HORAS_DISPONIBLES] = {0};
+
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        const char *horaReservada = (const char *)sqlite3_column_text(stmt, 0);
+        for (int i = 0; i < HORAS_DISPONIBLES; i++) {
+            if (strcmp(horas[i], horaReservada) == 0) {
+                usadas[i] = 1;
                 break;
             }
         }
+    }
 
-        if (disponible) printf("%s\n", horas[i]);
-        else printf("%s (Reservado)\n", horas[i]);
+    sqlite3_finalize(stmt);
+
+    for (int i = 0; i < HORAS_DISPONIBLES; i++) {
+        if (usadas[i])
+            printf("%s (Reservado)\n", horas[i]);
+        else
+            printf("%s\n", horas[i]);
     }
 }
 
@@ -49,11 +74,18 @@ void mostrarCalendarioMensual(int mes, int anio) {
     for (int dia = 1; dia <= diasEnMes; dia++) {
         int reservado = 0;
 
-        for (int j = 0; j < totalCitas; j++) {
-            if (citas[j].dia == dia && citas[j].mes == mes && citas[j].anio == anio && strcmp(citas[j].estado, "Programada") == 0) {
-                reservado = 1;
-                break;
+        const char *sql = "SELECT COUNT(*) FROM citas WHERE dia = ? AND mes = ? AND anio = ? AND estado = 'Programada';";
+        sqlite3_stmt *stmt;
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) == SQLITE_OK) {
+            sqlite3_bind_int(stmt, 1, dia);
+            sqlite3_bind_int(stmt, 2, mes);
+            sqlite3_bind_int(stmt, 3, anio);
+
+            if (sqlite3_step(stmt) == SQLITE_ROW) {
+                if (sqlite3_column_int(stmt, 0) > 0) reservado = 1;
             }
+
+            sqlite3_finalize(stmt);
         }
 
         if (reservado)
@@ -65,10 +97,10 @@ void mostrarCalendarioMensual(int mes, int anio) {
     }
 }
 
+
 void reservarCitaDesdeCalendario(int paciente_id) {
     int dia, mes, anio, indiceHora, medico_id;
 
-    // Mostrar el calendario de los próximos meses
     mostrarCalendariosFuturos();
 
     printf("Ingrese el mes que desea reservar (1 - 6): ");
@@ -80,7 +112,6 @@ void reservarCitaDesdeCalendario(int paciente_id) {
         return;
     }
 
-    // Mostrar el calendario para ese mes
     time_t t = time(NULL);
     struct tm *fechaActual = localtime(&t);
     anio = fechaActual->tm_year + 1900;
@@ -89,7 +120,6 @@ void reservarCitaDesdeCalendario(int paciente_id) {
     scanf("%d", &dia);
     getchar();
 
-    // Mostrar las horas disponibles para ese día
     mostrarHorasDisponibles(dia, mes, anio);
 
     printf("Seleccione un índice de hora (0 - 23): ");
@@ -101,32 +131,39 @@ void reservarCitaDesdeCalendario(int paciente_id) {
         return;
     }
 
-    // Solicitar el ID del médico
     printf("Ingrese el ID del médico con el que desea reservar la cita: ");
     scanf("%d", &medico_id);
     getchar();
 
-    // Crear una nueva cita
-    Cita nuevaCita;
-    nuevaCita.id = totalCitas + 1;
-    nuevaCita.paciente_id = paciente_id;
-    nuevaCita.medico_id = medico_id;
-    nuevaCita.dia = dia;
-    nuevaCita.mes = mes;
-    nuevaCita.anio = anio;
-    strcpy(nuevaCita.fecha, horas[indiceHora]);  // Hora de la cita
-    strcpy(nuevaCita.estado, "Programada");
-
+    char motivo[100];
     printf("Ingrese el motivo de la cita: ");
-    fgets(nuevaCita.motivo, sizeof(nuevaCita.motivo), stdin);
-    nuevaCita.motivo[strcspn(nuevaCita.motivo, "\n")] = '\0';  // Limpiar el salto de línea
+    fgets(motivo, sizeof(motivo), stdin);
+    motivo[strcspn(motivo, "\n")] = 0;
 
-    citas[totalCitas] = nuevaCita;
-    totalCitas++;
+    const char *sql = "INSERT INTO citas (paciente_id, medico_id, fecha, estado, motivo, dia, mes, anio, fecha_modificacion) "
+                      "VALUES (?, ?, ?, 'Programada', ?, ?, ?, ?, datetime('now'));";
+    sqlite3_stmt *stmt;
 
-    guardarCitas();
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        printf("Error al preparar la inserción de cita: %s\n", sqlite3_errmsg(db));
+        return;
+    }
 
-    printf("Cita reservada con éxito para la fecha: %d-%d-%d %s\n", dia, mes, anio, horas[indiceHora]);
+    sqlite3_bind_int(stmt, 1, paciente_id);
+    sqlite3_bind_int(stmt, 2, medico_id);
+    sqlite3_bind_text(stmt, 3, horas[indiceHora], -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 4, motivo, -1, SQLITE_STATIC);
+    sqlite3_bind_int(stmt, 5, dia);
+    sqlite3_bind_int(stmt, 6, mes);
+    sqlite3_bind_int(stmt, 7, anio);
+
+    if (sqlite3_step(stmt) == SQLITE_DONE) {
+        printf("Cita reservada con éxito para la fecha: %d-%d-%d %s\n", dia, mes, anio, horas[indiceHora]);
+    } else {
+        printf("Error al reservar cita: %s\n", sqlite3_errmsg(db));
+    }
+
+    sqlite3_finalize(stmt);
 }
 
 

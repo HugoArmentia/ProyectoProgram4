@@ -7,13 +7,13 @@
 #include "logs.h"
 #include "calendario.h"
 
+extern int usuarioActualId;
+
 void mostrarMenuPaciente() {
     int opcion;
-    int paciente_id;
+    extern int usuarioActualId;
+    int paciente_id = usuarioActualId;
 
-    printf("Ingrese su ID de paciente: ");
-    scanf("%d", &paciente_id);
-    getchar();
 
     do {
         printf("\n======= MENU PACIENTE =======\n");
@@ -55,12 +55,8 @@ void mostrarMenuPaciente() {
 
 void mostrarMenuMedico() {
     int opcion;
-    int medicoId;
-
-    // Solicitar el ID del médico antes de mostrar el menú
-    printf("Ingrese su ID de médico: ");
-    scanf("%d", &medicoId);
-    getchar();  // Limpiar el buffer
+    extern int usuarioActualId;
+    int medicoId = usuarioActualId;
 
     do {
         printf("\n======= MENU MEDICO =======\n");

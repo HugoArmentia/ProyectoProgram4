@@ -3,65 +3,62 @@
 #include <string.h>
 #include "historial.h"
 #include "utils.h"
-
-#define RUTA_HISTORIAL "data/historial_citas.txt"
-
-HistorialCita historial[MAX_HISTORIAL];
-int totalHistorial = 0;
-
-void cargarHistorial() {
-    FILE *archivo = fopen(RUTA_HISTORIAL, "r");
-    if (archivo == NULL) {
-        printf("No se pudo abrir el archivo de historial.\n");
-        return;
-    }
-
-    while (fscanf(archivo, "%d,%d,%d,%19[^,],%19[^,],%99[^,],%19s\n",
-                  &historial[totalHistorial].id,
-                  &historial[totalHistorial].paciente_id,
-                  &historial[totalHistorial].medico_id,
-                  historial[totalHistorial].fecha,
-                  historial[totalHistorial].estado,
-                  historial[totalHistorial].motivo,
-                  historial[totalHistorial].fecha_modificacion) == 7) {
-        totalHistorial++;
-    }
-
-    fclose(archivo);
-}
-
-void guardarHistorial() {
-    FILE *archivo = fopen(RUTA_HISTORIAL, "w");
-    if (archivo == NULL) {
-        printf("Error al guardar el archivo de historial.\n");
-        return;
-    }
-
-    for (int i = 0; i < totalHistorial; i++) {
-        fprintf(archivo, "%d,%d,%d,%s,%s,%s,%s\n",
-                historial[i].id,
-                historial[i].paciente_id,
-                historial[i].medico_id,
-                historial[i].fecha,
-                historial[i].estado,
-                historial[i].motivo,
-                historial[i].fecha_modificacion);
-    }
-
-    fclose(archivo);
-}
+#include <sqlite3.h>
+#include "database.h"
 
 void listarHistorialMedico(int medicoId) {
-    printf("\n======= HISTORIAL DE CITAS =======\n");
+    const char *sql = "SELECT id, paciente_id, fecha, estado, motivo FROM historial_citas WHERE medico_id = ? ORDER BY fecha DESC;";
+    sqlite3_stmt *stmt;
 
-    for (int i = 0; i < totalHistorial; i++) {
-        if (historial[i].medico_id == medicoId) {
-            printf("ID Historial: %d\n", historial[i].id);
-            printf("Paciente ID: %d\n", historial[i].paciente_id);
-            printf("Fecha: %s\n", historial[i].fecha);
-            printf("Estado: %s\n", historial[i].estado);
-            printf("Motivo: %s\n", historial[i].motivo);
-            printf("-------------------------------\n");
-        }
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        printf("Error al preparar la consulta del historial del médico: %s\n", sqlite3_errmsg(db));
+        return;
     }
+
+    sqlite3_bind_int(stmt, 1, medicoId);
+
+    printf("\n======= HISTORIAL DE CITAS DEL MÉDICO ID %d =======\n", medicoId);
+
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        int id = sqlite3_column_int(stmt, 0);
+        int paciente_id = sqlite3_column_int(stmt, 1);
+        const unsigned char *fecha = sqlite3_column_text(stmt, 2);
+        const unsigned char *estado = sqlite3_column_text(stmt, 3);
+        const unsigned char *motivo = sqlite3_column_text(stmt, 4);
+
+        printf("ID Historial: %d\n", id);
+        printf("Paciente ID: %d\n", paciente_id);
+        printf("Fecha: %s\n", fecha);
+        printf("Estado: %s\n", estado);
+        printf("Motivo: %s\n", motivo);
+        printf("-------------------------------\n");
+    }
+
+    sqlite3_finalize(stmt);
+}
+
+void insertarHistorialCita(int paciente_id, int medico_id, const char *fecha, const char *estado, const char *motivo) {
+    const char *sql = "INSERT INTO historial_citas (paciente_id, medico_id, fecha, estado, motivo, fecha_modificacion) "
+                      "VALUES (?, ?, ?, ?, ?, datetime('now'));";
+
+    sqlite3_stmt *stmt;
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        printf("Error al preparar la inserción en historial: %s\n", sqlite3_errmsg(db));
+        return;
+    }
+
+    sqlite3_bind_int(stmt, 1, paciente_id);
+    sqlite3_bind_int(stmt, 2, medico_id);
+    sqlite3_bind_text(stmt, 3, fecha, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 4, estado, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 5, motivo, -1, SQLITE_STATIC);
+
+    if (sqlite3_step(stmt) == SQLITE_DONE) {
+        printf("Registro de historial creado con éxito.\n");
+    } else {
+        printf("Error al insertar historial: %s\n", sqlite3_errmsg(db));
+    }
+
+    sqlite3_finalize(stmt);
 }
