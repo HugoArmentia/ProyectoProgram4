@@ -11,7 +11,6 @@ extern int usuarioActualId;
 
 void mostrarMenuPaciente() {
     int opcion;
-    extern int usuarioActualId;
     int paciente_id = usuarioActualId;
 
 
@@ -55,7 +54,6 @@ void mostrarMenuPaciente() {
 
 void mostrarMenuMedico() {
     int opcion;
-    extern int usuarioActualId;
     int medicoId = usuarioActualId;
 
     do {

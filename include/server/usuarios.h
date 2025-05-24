@@ -4,8 +4,6 @@
 extern int usuarioActualId; 
 extern char tipoUsuarioActual[20];
 
-void cargarUsuarios();              
-void guardarUsuarios();
 void registrarUsuario();
 int autenticarUsuario();
 void listarUsuarios();
