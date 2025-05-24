@@ -6,11 +6,15 @@
 #include "usuarios.h"
 #include <sqlite3.h>
 #include "database.h"
+#include "config.h"
 
 int usuarioActualId = -1;
 char tipoUsuarioActual[20] = "";
 
 int main() {
+
+    cargarConfiguracion("data/config.txt");
+
     if (!inicializarBaseDeDatos()) {
         printf("Error al inicializar la base de datos.\n");
         return 1;

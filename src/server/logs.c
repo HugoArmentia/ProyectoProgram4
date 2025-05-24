@@ -12,7 +12,7 @@ void registrarLog(const char *tipo_evento, const char *descripcion, int usuario_
     obtenerFechaHoraActual(fecha_evento);
 
     sqlite3_stmt *stmt;
-    const char *sql = "INSERT INTO logs (tipo_evento, descripcion, usuario_id, fecha) VALUES (?, ?, ?, ?);";
+    const char *sql = "INSERT INTO logs (tipo_evento, descripcion, usuario_id, fecha_evento) VALUES (?, ?, ?, ?);";
 
     if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) == SQLITE_OK) {
         sqlite3_bind_text(stmt, 1, tipo_evento, -1, SQLITE_TRANSIENT);
