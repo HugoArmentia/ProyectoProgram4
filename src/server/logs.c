@@ -1,89 +1,61 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sqlite3.h>
 #include "logs.h"
 #include "utils.h"
+#include "database.h"  // Asegúrate de que sqlite3 *db está definido aquí
 
-LogActividad logs[MAX_LOGS];
-int totalLogs = 0;
-
-void cargarLogs() {
-    FILE *archivo = fopen("data/logs_actividades.txt", "r");
-    if (archivo == NULL) {
-        printf("No se pudo abrir el archivo de logs.\n");
-        return;
-    }
-
-    totalLogs = 0;
-    while (fscanf(archivo, "%d,%49[^,],%199[^,],%d,%19s\n",
-                  &logs[totalLogs].id,
-                  logs[totalLogs].tipo_evento,
-                  logs[totalLogs].descripcion,
-                  &logs[totalLogs].usuario_id,
-                  logs[totalLogs].fecha_evento) == 5) {
-        totalLogs++;
-        if (totalLogs >= MAX_LOGS) break;
-    }
-
-    fclose(archivo);
-}
-
-void guardarLogs() {
-    FILE *archivo = fopen("data/logs_actividades.txt", "w");
-    if (archivo == NULL) {
-        printf("Error al guardar el archivo de logs.\n");
-        return;
-    }
-    // estamos cooked
-    for (int i = 0; i < totalLogs; i++) {
-        fprintf(archivo, "%d,%s,%s,%d,%s\n",
-                logs[i].id,
-                logs[i].tipo_evento,
-                logs[i].descripcion,
-                logs[i].usuario_id,
-                logs[i].fecha_evento);
-    }
-
-    fclose(archivo);
-}
-
+// Registrar un log en la base de datos
 void registrarLog(const char *tipo_evento, const char *descripcion, int usuario_id) {
-    if (totalLogs >= MAX_LOGS) {
-        printf("Se alcanzó el límite máximo de logs registrados.\n");
+    char fecha_evento[20];
+    obtenerFechaHoraActual(fecha_evento);
+
+    sqlite3_stmt *stmt;
+    const char *sql = "INSERT INTO logs (tipo_evento, descripcion, usuario_id, fecha) VALUES (?, ?, ?, ?);";
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) == SQLITE_OK) {
+        sqlite3_bind_text(stmt, 1, tipo_evento, -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 2, descripcion, -1, SQLITE_TRANSIENT);
+        sqlite3_bind_int(stmt, 3, usuario_id);
+        sqlite3_bind_text(stmt, 4, fecha_evento, -1, SQLITE_TRANSIENT);
+
+        if (sqlite3_step(stmt) != SQLITE_DONE) {
+            printf("Error al registrar log: %s\n", sqlite3_errmsg(db));
+        }
+
+        sqlite3_finalize(stmt);
+    } else {
+        printf("Error al preparar registro de log: %s\n", sqlite3_errmsg(db));
+    }
+}
+
+// Mostrar todos los logs almacenados en la base de datos
+void listarLogs() {
+    sqlite3_stmt *stmt;
+    const char *sql = "SELECT id, tipo_evento, descripcion, usuario_id, fecha FROM logs ORDER BY id DESC";
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        printf("Error al preparar SELECT de logs: %s\n", sqlite3_errmsg(db));
         return;
     }
 
-    LogActividad nuevoLog;
-    nuevoLog.id = totalLogs + 1;
-    strncpy(nuevoLog.tipo_evento, tipo_evento, MAX_LOG_TIPO - 1);
-    nuevoLog.tipo_evento[MAX_LOG_TIPO - 1] = '\0';
-
-    strncpy(nuevoLog.descripcion, descripcion, MAX_LOG_DESC - 1);
-    nuevoLog.descripcion[MAX_LOG_DESC - 1] = '\0';
-
-    nuevoLog.usuario_id = usuario_id;
-
-    obtenerFechaHoraActual(nuevoLog.fecha_evento);
-
-    logs[totalLogs] = nuevoLog;
-    totalLogs++;
-
-    guardarLogs();
-}
-
-void listarLogs() {
     printf("======= LISTADO DE LOGS =======\n");
 
-    for (int i = 0; i < totalLogs; i++) {
-        printf("ID: %d\n", logs[i].id);
-        printf("Tipo de Evento: %s\n", logs[i].tipo_evento);
-        printf("Descripción: %s\n", logs[i].descripcion);
-        printf("ID de Usuario: %d\n", logs[i].usuario_id);
-        printf("Fecha del Evento: %s\n", logs[i].fecha_evento);
+    int hayLogs = 0;
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        hayLogs = 1;
+        printf("ID: %d\n", sqlite3_column_int(stmt, 0));
+        printf("Tipo de Evento: %s\n", sqlite3_column_text(stmt, 1));
+        printf("Descripción: %s\n", sqlite3_column_text(stmt, 2));
+        printf("ID de Usuario: %d\n", sqlite3_column_int(stmt, 3));
+        printf("Fecha del Evento: %s\n", sqlite3_column_text(stmt, 4));
         printf("------------------------------\n");
     }
 
-    if (totalLogs == 0) {
+    if (!hayLogs) {
         printf("No hay logs registrados.\n");
     }
+
+    sqlite3_finalize(stmt);
 }
