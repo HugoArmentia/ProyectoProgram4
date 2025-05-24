@@ -4,65 +4,13 @@
 #include "usuarios.h"
 #include "logs.h"
 #include "utils.h"
+#include <sqlite3.h>
+#include "database.h"  
 
-#define RUTA_USUARIOS "data/usuarios.txt"
+extern char tipoUsuarioActual[20];
 
-Usuario usuarios[MAX_USUARIOS];
-int totalUsuarios = 0;
-
-void cargarUsuarios() {
-    FILE *archivo = fopen(RUTA_USUARIOS, "r");
-    if (archivo == NULL) {
-        printf("No se pudo abrir el archivo de usuarios. Creando uno nuevo.\n");
-        return;
-    }
-
-    while (fscanf(archivo, "%d,%49[^,],%19[^,],%49[^,],%49[^,],%14[^,],%99[^,],%19s\n",
-                  &usuarios[totalUsuarios].id,
-                  usuarios[totalUsuarios].nombre,
-                  usuarios[totalUsuarios].tipo,
-                  usuarios[totalUsuarios].password,
-                  usuarios[totalUsuarios].email,
-                  usuarios[totalUsuarios].telefono,
-                  usuarios[totalUsuarios].direccion,
-                  usuarios[totalUsuarios].fecha_registro) == 8) {
-        totalUsuarios++;
-    }
-
-    fclose(archivo);
-}
-
-void guardarUsuarios() {
-    FILE *archivo = fopen("data/usuarios.txt", "w");  // Abre el archivo en modo escritura
-    if (archivo == NULL) {
-        printf("No se pudo abrir el archivo de usuarios para escribir.\n");
-        return;
-    }
-
-    for (int i = 0; i < totalUsuarios; i++) {
-        fprintf(archivo, "%d,%s,%s,%s,%s,%s,%s,%s\n",
-                usuarios[i].id,
-                usuarios[i].nombre,
-                usuarios[i].tipo,
-                usuarios[i].password,
-                usuarios[i].email,
-                usuarios[i].telefono,
-                usuarios[i].direccion,
-                usuarios[i].fecha_registro);
-    }
-
-    fclose(archivo);
-    printf("Usuarios guardados correctamente.\n");
-}
-
-void registrarUsuario() { 
-    if (totalUsuarios >= MAX_USUARIOS) {
-        printf("Límite máximo de usuarios alcanzado.\n");
-        return;
-    }
-
+void registrarUsuario() {
     Usuario nuevoUsuario;
-    nuevoUsuario.id = totalUsuarios + 1;
 
     printf("Ingrese el nombre del usuario: ");
     fgets(nuevoUsuario.nombre, 50, stdin);
@@ -72,7 +20,7 @@ void registrarUsuario() {
     fgets(nuevoUsuario.password, 50, stdin);
     nuevoUsuario.password[strcspn(nuevoUsuario.password, "\n")] = 0;
 
-    printf("Ingrese el tipo de usuario: ");
+    printf("Ingrese el tipo de usuario (Paciente/Medico/Admin): ");
     fgets(nuevoUsuario.tipo, 20, stdin);
     nuevoUsuario.tipo[strcspn(nuevoUsuario.tipo, "\n")] = 0;
 
@@ -88,16 +36,32 @@ void registrarUsuario() {
     fgets(nuevoUsuario.direccion, 100, stdin);
     nuevoUsuario.direccion[strcspn(nuevoUsuario.direccion, "\n")] = 0;
 
-    printf("Ingrese la fecha de registro (YYYY-MM-DD): ");
-    fgets(nuevoUsuario.fecha_registro, 20, stdin);
-    nuevoUsuario.fecha_registro[strcspn(nuevoUsuario.fecha_registro, "\n")] = 0;
+    // Sentencia SQL con placeholders
+    const char *sql = "INSERT INTO Usuario (nombre, tipo, password, email, telefono, direccion, fecha_registro) "
+                      "VALUES (?, ?, ?, ?, ?, ?, datetime('now'));";
 
-    usuarios[totalUsuarios] = nuevoUsuario;
-    totalUsuarios++;
-    
-    guardarUsuarios();
+    sqlite3_stmt *stmt;
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        printf("Error al preparar la consulta: %s\n", sqlite3_errmsg(db));
+        return;
+    }
 
-    printf("Usuario registrado correctamente.\n");
+    // Asignar valores a los parámetros
+    sqlite3_bind_text(stmt, 1, nuevoUsuario.nombre, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, nuevoUsuario.tipo, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 3, nuevoUsuario.password, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 4, nuevoUsuario.email, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 5, nuevoUsuario.telefono, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 6, nuevoUsuario.direccion, -1, SQLITE_STATIC);
+
+    // Ejecutar
+    if (sqlite3_step(stmt) != SQLITE_DONE) {
+        printf("Error al registrar usuario: %s\n", sqlite3_errmsg(db));
+    } else {
+        printf("Usuario registrado exitosamente en la base de datos.\n");
+    }
+
+    sqlite3_finalize(stmt);
 }
 
 int autenticarUsuario() {
@@ -105,117 +69,177 @@ int autenticarUsuario() {
     char password[50];
 
     printf("Nombre de usuario: ");
-    fgets(nombre, 50, stdin);
+    fgets(nombre, sizeof(nombre), stdin);
     nombre[strcspn(nombre, "\n")] = 0;
 
     printf("Contraseña: ");
-    fgets(password, 50, stdin);
+    fgets(password, sizeof(password), stdin);
     password[strcspn(password, "\n")] = 0;
 
-    for (int i = 0; i < totalUsuarios; i++) {
-        if (strcmp(usuarios[i].nombre, nombre) == 0 && strcmp(usuarios[i].password, password) == 0) {
-            printf("Autenticación exitosa.\n");
-            return usuarios[i].id;
-        }
+    const char *sql = "SELECT id, tipo FROM Usuario WHERE nombre = ? AND password = ?;";
+    sqlite3_stmt *stmt;
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        printf("Error preparando consulta: %s\n", sqlite3_errmsg(db));
+        return -1;
     }
 
-    printf("Autenticación fallida.\n");
-    return -1;
+    sqlite3_bind_text(stmt, 1, nombre, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, password, -1, SQLITE_STATIC);
+
+    int userId = -1;
+
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        userId = sqlite3_column_int(stmt, 0);
+        const unsigned char *tipo = sqlite3_column_text(stmt, 1);
+        strcpy(tipoUsuarioActual, (const char*)tipo);
+
+        printf("Autenticación exitosa.\n");
+    } else {
+        printf("Autenticación fallida.\n");
+    }
+
+    sqlite3_finalize(stmt);
+    return userId;
 }
 
 void listarUsuarios() {
-    if (totalUsuarios == 0) {
-        printf("No hay usuarios registrados.\n");
+    const char *sql = "SELECT id, nombre, tipo, email, telefono, direccion, fecha_registro FROM Usuario;";
+    sqlite3_stmt *stmt;
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        printf("Error al preparar la consulta: %s\n", sqlite3_errmsg(db));
         return;
     }
 
     printf("======= LISTADO DE USUARIOS =======\n");
 
-    for (int i = 0; i < totalUsuarios; i++) {
-        printf("ID: %d\n", usuarios[i].id);
-        printf("Nombre: %s\n", usuarios[i].nombre);
-        printf("Tipo: %s\n", usuarios[i].tipo);
-        printf("Email: %s\n", usuarios[i].email);
-        printf("Telefono: %s\n", usuarios[i].telefono);
-        printf("Direccion: %s\n", usuarios[i].direccion);
-        printf("Fecha de Registro: %s\n", usuarios[i].fecha_registro);
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        int id = sqlite3_column_int(stmt, 0);
+        const unsigned char *nombre = sqlite3_column_text(stmt, 1);
+        const unsigned char *tipo = sqlite3_column_text(stmt, 2);
+        const unsigned char *email = sqlite3_column_text(stmt, 3);
+        const unsigned char *telefono = sqlite3_column_text(stmt, 4);
+        const unsigned char *direccion = sqlite3_column_text(stmt, 5);
+        const unsigned char *fecha_registro = sqlite3_column_text(stmt, 6);
+
+        printf("ID: %d\n", id);
+        printf("Nombre: %s\n", nombre);
+        printf("Tipo: %s\n", tipo);
+        printf("Email: %s\n", email);
+        printf("Telefono: %s\n", telefono);
+        printf("Direccion: %s\n", direccion);
+        printf("Fecha de Registro: %s\n", fecha_registro);
         printf("-------------------------------\n");
     }
-    
+
+    sqlite3_finalize(stmt);
 }
 
 void modificarUsuario() {
     int userId;
-    listarUsuarios();  // Mostrar todos los usuarios para elegir
+    listarUsuarios();  // Mostrar los usuarios para elegir
+
     printf("Ingrese el ID del usuario que desea modificar: ");
     scanf("%d", &userId);
     getchar();  // Limpiar el buffer
 
-    for (int i = 0; i < totalUsuarios; i++) {
-        if (usuarios[i].id == userId) {
-            printf("Modificando usuario con ID %d:\n", userId);
+    char nombre[50], tipo[20], email[50], telefono[15], direccion[100], password[50];
 
-            printf("Ingrese el nuevo nombre del usuario: ");
-            fgets(usuarios[i].nombre, 50, stdin);
-            usuarios[i].nombre[strcspn(usuarios[i].nombre, "\n")] = 0;
+    printf("Ingrese el nuevo nombre del usuario: ");
+    fgets(nombre, sizeof(nombre), stdin);
+    nombre[strcspn(nombre, "\n")] = 0;
 
-            printf("Ingrese el nuevo tipo de usuario: ");
-            fgets(usuarios[i].tipo, 20, stdin);
-            usuarios[i].tipo[strcspn(usuarios[i].tipo, "\n")] = 0;
+    printf("Ingrese el nuevo tipo de usuario: ");
+    fgets(tipo, sizeof(tipo), stdin);
+    tipo[strcspn(tipo, "\n")] = 0;
 
-            printf("Ingrese el nuevo email: ");
-            fgets(usuarios[i].email, 50, stdin);
-            usuarios[i].email[strcspn(usuarios[i].email, "\n")] = 0;
+    printf("Ingrese el nuevo email: ");
+    fgets(email, sizeof(email), stdin);
+    email[strcspn(email, "\n")] = 0;
 
-            printf("Ingrese el nuevo telefono: ");
-            fgets(usuarios[i].telefono, 15, stdin);
-            usuarios[i].telefono[strcspn(usuarios[i].telefono, "\n")] = 0;
+    printf("Ingrese el nuevo teléfono: ");
+    fgets(telefono, sizeof(telefono), stdin);
+    telefono[strcspn(telefono, "\n")] = 0;
 
-            printf("Ingrese la nueva direccion: ");
-            fgets(usuarios[i].direccion, 100, stdin);
-            usuarios[i].direccion[strcspn(usuarios[i].direccion, "\n")] = 0;
+    printf("Ingrese la nueva dirección: ");
+    fgets(direccion, sizeof(direccion), stdin);
+    direccion[strcspn(direccion, "\n")] = 0;
 
-            // Permitir cambiar la contraseña
-            printf("Ingrese la nueva contraseña: ");
-            fgets(usuarios[i].password, 50, stdin);
-            usuarios[i].password[strcspn(usuarios[i].password, "\n")] = 0;
+    printf("Ingrese la nueva contraseña: ");
+    fgets(password, sizeof(password), stdin);
+    password[strcspn(password, "\n")] = 0;
 
-            guardarUsuarios();
-            printf("Usuario con ID %d modificado exitosamente.\n", userId);
-            return;
-        }
+    const char *sql = "UPDATE Usuario SET nombre = ?, tipo = ?, email = ?, telefono = ?, direccion = ?, password = ? WHERE id = ?;";
+    sqlite3_stmt *stmt;
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        printf("Error preparando consulta: %s\n", sqlite3_errmsg(db));
+        return;
     }
-    printf("No se encontró un usuario con el ID especificado.\n");
+
+    sqlite3_bind_text(stmt, 1, nombre, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, tipo, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 3, email, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 4, telefono, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 5, direccion, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 6, password, -1, SQLITE_STATIC);
+    sqlite3_bind_int(stmt, 7, userId);
+
+    if (sqlite3_step(stmt) == SQLITE_DONE) {
+        printf("Usuario con ID %d modificado exitosamente.\n", userId);
+    } else {
+        printf("Error al modificar usuario: %s\n", sqlite3_errmsg(db));
+    }
+
+    sqlite3_finalize(stmt);
 }
+
 
 void eliminarUsuario() {
     int userId;
-    listarUsuarios();  // Mostrar todos los usuarios para elegir
+    listarUsuarios();  // Mostrar los usuarios actuales
+
     printf("Ingrese el ID del usuario que desea eliminar: ");
     scanf("%d", &userId);
     getchar();  // Limpiar el buffer
 
-    for (int i = 0; i < totalUsuarios; i++) {
-        if (usuarios[i].id == userId) {
-            // Desplazar todos los usuarios hacia la izquierda para eliminar
-            for (int j = i; j < totalUsuarios - 1; j++) {
-                usuarios[j] = usuarios[j + 1];
-            }
-            totalUsuarios--;
-            guardarUsuarios();
-            printf("Usuario con ID %d eliminado exitosamente.\n", userId);
-            return;
-        }
+    const char *sql = "DELETE FROM Usuario WHERE id = ?;";
+    sqlite3_stmt *stmt;
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        printf("Error preparando consulta DELETE: %s\n", sqlite3_errmsg(db));
+        return;
     }
-    printf("No se encontró un usuario con el ID especificado.\n");
+
+    sqlite3_bind_int(stmt, 1, userId);
+
+    if (sqlite3_step(stmt) == SQLITE_DONE) {
+        printf("Usuario con ID %d eliminado exitosamente.\n", userId);
+    } else {
+        printf("Error al eliminar usuario: %s\n", sqlite3_errmsg(db));
+    }
+
+    sqlite3_finalize(stmt);
 }
 
 void listarMedicos() {
-    printf("\n======= LISTA DE MÉDICOS =======\n");
-    for (int i = 0; i < totalUsuarios; i++) {
-        if (strcmp(usuarios[i].tipo, "Medico") == 0) {
-            printf("ID: %d, Nombre: %s\n", usuarios[i].id, usuarios[i].nombre);
-        }
+    const char *sql = "SELECT id, nombre FROM Usuario WHERE tipo = 'Medico';";
+    sqlite3_stmt *stmt;
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+        printf("Error al preparar la consulta: %s\n", sqlite3_errmsg(db));
+        return;
     }
+
+    printf("\n======= LISTA DE MÉDICOS =======\n");
+
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        int id = sqlite3_column_int(stmt, 0);
+        const unsigned char *nombre = sqlite3_column_text(stmt, 1);
+        printf("ID: %d, Nombre: %s\n", id, nombre);
+    }
+
     printf("--------------------------------\n");
+    sqlite3_finalize(stmt);
 }

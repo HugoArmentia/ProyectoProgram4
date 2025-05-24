@@ -2,18 +2,18 @@
 #include <stdlib.h>
 #include <sqlite3.h>
 #include "database.h"
+#include "config.h"
+extern Config configuracion;
 
-// Declaración de la variable global db
 sqlite3 *db;
 
-// Función para inicializar (abrir) la base de datos
 int inicializarBaseDeDatos() {
-    int rc = sqlite3_open("data/citas_medicas.db", &db);  // Ruta a tu archivo .db creado en DB Browser for SQLite
+    int rc = sqlite3_open(configuracion.nombre_base_datos, &db);  // Ruta a tu archivo .db creado en DB Browser for SQLite
     if (rc != SQLITE_OK) {
         printf("No se pudo abrir la base de datos: %s\n", sqlite3_errmsg(db));
         return 0;
     }
-    printf("Base de datos 1.db abierta correctamente.\n");
+    printf("Base de datos '%s' abierta correctamente.\n", configuracion.nombre_base_datos);
     return 1;
 }
 
