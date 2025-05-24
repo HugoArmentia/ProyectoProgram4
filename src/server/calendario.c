@@ -22,7 +22,6 @@ void mostrarHorasDisponibles(int dia, int mes, int anio) {
 
     const char *sql = "SELECT fecha FROM citas WHERE dia = ? AND mes = ? AND anio = ? AND estado = 'Programada';";
     sqlite3_stmt *stmt;
-    char horasReservadas[HORAS_DISPONIBLES][10] = {0};
 
     if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
         printf("Error al preparar consulta de horas: %s\n", sqlite3_errmsg(db));

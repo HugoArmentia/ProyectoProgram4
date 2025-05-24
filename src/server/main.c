@@ -29,7 +29,7 @@ int main() {
         printf("Error al obtener las tablas: %s\n", sqlite3_errmsg(db));
     }
 
-    cargarLogs();
+    registrarLog("Sistema", "Sistema SRCM iniciado", -1);
 
     int opcion;
     do {
@@ -45,6 +45,8 @@ int main() {
             case 1:
                 usuarioActualId = autenticarUsuario();
                 if (usuarioActualId != -1) {
+                    registrarLog("Login", "Inicio de sesión exitoso", usuarioActualId);
+
                     if (strcmp(tipoUsuarioActual, "Paciente") == 0) {
                         mostrarMenuPaciente();
                     } else if (strcmp(tipoUsuarioActual, "Medico") == 0) {
@@ -52,23 +54,27 @@ int main() {
                     } else if (strcmp(tipoUsuarioActual, "Admin") == 0) {
                         mostrarMenuAdmin();
                     }
+                } else {
+                    registrarLog("Login fallido", "Intento de autenticación fallido", -1);
                 }
                 break;
 
             case 2:
                 registrarUsuario();
+                registrarLog("Registro", "Nuevo usuario registrado desde menú principal", -1);
                 break;
 
             case 0:
                 printf("Saliendo del programa...\n");
+                registrarLog("Logout", "Sistema cerrado correctamente", usuarioActualId);
                 break;
 
             default:
                 printf("Opción no válida. Intente nuevamente.\n");
+                registrarLog("Error", "Selección inválida en menú principal", -1);
         }
     } while(opcion != 0);
 
-    guardarLogs();
     cerrarBaseDeDatos();
 
     printf("Gracias por usar el Sistema de Reservas de Citas Médicas (SRCM).\n");

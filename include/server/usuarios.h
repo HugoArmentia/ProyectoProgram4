@@ -1,6 +1,17 @@
 #ifndef USUARIOS_H
 #define USUARIOS_H
 
+typedef struct {
+    char nombre[50];
+    char tipo[20];
+    char password[50];
+    char email[50];
+    char telefono[15];
+    char direccion[100];
+    // fecha_registro lo gestiona SQLite con datetime('now'), así que no hace falta aquí
+} Usuario;
+
+
 extern int usuarioActualId; 
 extern char tipoUsuarioActual[20];
 
