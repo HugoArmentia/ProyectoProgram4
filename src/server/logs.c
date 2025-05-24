@@ -33,7 +33,7 @@ void registrarLog(const char *tipo_evento, const char *descripcion, int usuario_
 // Mostrar todos los logs almacenados en la base de datos
 void listarLogs() {
     sqlite3_stmt *stmt;
-    const char *sql = "SELECT id, tipo_evento, descripcion, usuario_id, fecha FROM logs ORDER BY id DESC";
+    const char *sql = "SELECT id, tipo_evento, descripcion, usuario_id, fecha_evento FROM logs ORDER BY id DESC";
 
     if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
         printf("Error al preparar SELECT de logs: %s\n", sqlite3_errmsg(db));
