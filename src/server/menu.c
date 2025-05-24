@@ -13,7 +13,6 @@ void mostrarMenuPaciente() {
     int opcion;
     int paciente_id = usuarioActualId;
 
-
     do {
         printf("\n======= MENU PACIENTE =======\n");
         printf("1. Reservar cita\n");
@@ -28,29 +27,35 @@ void mostrarMenuPaciente() {
 
         switch(opcion) {
             case 1:
+                registrarLog("Paciente", "Reservó una cita", paciente_id);
                 reservarCitaDesdeCalendario(paciente_id);
                 break;
             case 2:
+                registrarLog("Paciente", "Consultó sus citas programadas", paciente_id);
                 listarCitas();
                 break;
             case 3:
+                registrarLog("Paciente", "Modificó una cita", paciente_id);
                 modificarCita();
                 break;
             case 4:
+                registrarLog("Paciente", "Canceló una cita", paciente_id);
                 cancelarCita();
                 break;
             case 5:
-                listarHistorial();  // Llamada a la función para mostrar el historial
+                registrarLog("Paciente", "Consultó su historial de citas", paciente_id);
+                listarHistorial();
                 break;
             case 0:
+                registrarLog("Paciente", "Cerró sesión", paciente_id);
                 printf("Cerrando sesión de Paciente...\n");
                 return;
             default:
+                registrarLog("Paciente", "Seleccionó una opción inválida", paciente_id);
                 printf("Opción no válida. Intente nuevamente.\n");
         }
     } while(opcion != 0);
 }
-
 
 void mostrarMenuMedico() {
     int opcion;
@@ -68,19 +73,24 @@ void mostrarMenuMedico() {
 
         switch(opcion) {
             case 1:
-                listarCitasMedico(medicoId);  // Mostrar solo las citas asignadas a este médico
+                registrarLog("Medico", "Consultó sus citas asignadas", medicoId);
+                listarCitasMedico(medicoId);
                 break;
             case 2:
-                listarHistorial();  // Mostrar historial de citas relacionadas con el médico
-                listarHistorialMedico(medicoId);  // Mostrar historial de citas de este médico
+                registrarLog("Medico", "Consultó su historial de citas", medicoId);
+                listarHistorial();
+                listarHistorialMedico(medicoId);
                 break;
             case 3:
-                actualizarEstadoCita(medicoId);  // Cambiar el estado de una cita específica (ej. Programada -> Completada)
+                registrarLog("Medico", "Actualizó el estado de una cita", medicoId);
+                actualizarEstadoCita(medicoId);
                 break;
             case 0:
+                registrarLog("Medico", "Cerró sesión", medicoId);
                 printf("Cerrando sesión de Medico...\n");
                 return;
             default:
+                registrarLog("Medico", "Seleccionó una opción inválida", medicoId);
                 printf("Opción no válida. Intente nuevamente.\n");
         }
     } while(opcion != 0);
@@ -103,27 +113,32 @@ void mostrarMenuAdmin() {
 
         switch(opcion) {
             case 1:
+                registrarLog("Admin", "Listó todos los usuarios", usuarioActualId);
                 listarUsuarios();
                 break;
             case 2:
+                registrarLog("Admin", "Consultó los logs del sistema", usuarioActualId);
                 listarLogs();
                 break;
             case 3:
                 registrarUsuario();
+                registrarLog("Admin", "Registró un nuevo usuario", usuarioActualId);
                 break;
             case 4:
-                modificarUsuario();  // Nueva función que vamos a implementar
+                modificarUsuario();
+                registrarLog("Admin", "Modificó un usuario", usuarioActualId);
                 break;
             case 5:
-                eliminarUsuario();  // Nueva función que vamos a implementar
+                eliminarUsuario();
+                registrarLog("Admin", "Eliminó un usuario", usuarioActualId);
                 break;
             case 0:
+                registrarLog("Admin", "Cerró sesión", usuarioActualId);
                 printf("Cerrando sesión de Administrador...\n");
                 return;
             default:
+                registrarLog("Admin", "Seleccionó una opción no válida", usuarioActualId);
                 printf("Opción no válida. Intente nuevamente.\n");
         }
     } while(opcion != 0);
 }
-
-

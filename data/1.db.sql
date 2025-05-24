@@ -19,6 +19,9 @@ CREATE TABLE IF NOT EXISTS "citas" (
     "estado" TEXT CHECK("estado" IN ('Programada', 'Completada', 'Cancelada')),
     "motivo" TEXT,
     "fecha_modificacion" TEXT DEFAULT (datetime('now')),
+    "dia INTEGER,"
+    "mes INTEGER,"
+    "anio INTEGER,"
     FOREIGN KEY("medico_id") REFERENCES "Usuario"("id"),
     FOREIGN KEY("paciente_id") REFERENCES "Usuario"("id")
 );

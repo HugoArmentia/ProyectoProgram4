@@ -3,6 +3,7 @@
     "files.associations": {
         "stdio.h": "c",
         "sqlite3.h": "c",
-        "database.h": "c"
+        "database.h": "c",
+        "historial.h": "c"
     }
 }

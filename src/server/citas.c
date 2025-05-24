@@ -11,6 +11,9 @@
 #include "database.h"
 #include "historial.h"
 
+#define HORAS_DISPONIBLES 24  
+extern const char *horas[];  // declaramos el array de horas si está definido en otro archivo
+
 void listarCitas() {
     const char *sql = "SELECT id, fecha, motivo, dia, mes, anio FROM citas WHERE estado = 'Programada';";
     sqlite3_stmt *stmt;
@@ -28,7 +31,7 @@ void listarCitas() {
         int dia = sqlite3_column_int(stmt, 3);
         int mes = sqlite3_column_int(stmt, 4);
         int anio = sqlite3_column_int(stmt, 5);
-        printf("ID: %d - Fecha: %d-%d-%d %s - Motivo: %s\n", id, dia, mes, anio, fecha, motivo);
+        printf("ID: %d - Fecha: %d-%d-%d - Hora: %s - Motivo: %s\n", id, dia, mes, anio, fecha, motivo);
     }
 
     sqlite3_finalize(stmt);
@@ -122,17 +125,38 @@ void listarCitasMedico(int medico_id) {
 
 void modificarCita() {
     int citaId;
-    char nuevaFecha[20];
+    int dia, mes, anio, indiceHora;
 
     printf("Ingrese el ID de la cita que desea modificar: ");
     scanf("%d", &citaId);
     getchar();
 
-    printf("Ingrese la nueva fecha para la cita (YYYY-MM-DD HH:MM): ");
-    fgets(nuevaFecha, sizeof(nuevaFecha), stdin);
-    nuevaFecha[strcspn(nuevaFecha, "\n")] = 0;
+    printf("Ingrese el nuevo día (1-31): ");
+    scanf("%d", &dia);
+    getchar();
 
-    const char *sql = "UPDATE citas SET fecha = ?, fecha_modificacion = datetime('now') WHERE id = ?;";
+    printf("Ingrese el nuevo mes (1-12): ");
+    scanf("%d", &mes);
+    getchar();
+
+    printf("Ingrese el nuevo año (ej: 2025): ");
+    scanf("%d", &anio);
+    getchar();
+
+    mostrarHorasDisponibles(dia, mes, anio);
+
+    printf("Seleccione un índice de hora (0 - 23): ");
+    scanf("%d", &indiceHora);
+    getchar();
+
+    if (indiceHora < 0 || indiceHora >= HORAS_DISPONIBLES) {
+        printf("Índice de hora inválido.\n");
+        return;
+    }
+
+    const char *horaSeleccionada = horas[indiceHora];
+
+    const char *sql = "UPDATE citas SET fecha = ?, dia = ?, mes = ?, anio = ?, fecha_modificacion = datetime('now') WHERE id = ?;";
     sqlite3_stmt *stmt;
 
     if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
@@ -140,17 +164,21 @@ void modificarCita() {
         return;
     }
 
-    sqlite3_bind_text(stmt, 1, nuevaFecha, -1, SQLITE_STATIC);
-    sqlite3_bind_int(stmt, 2, citaId);
+    sqlite3_bind_text(stmt, 1, horaSeleccionada, -1, SQLITE_STATIC);
+    sqlite3_bind_int(stmt, 2, dia);
+    sqlite3_bind_int(stmt, 3, mes);
+    sqlite3_bind_int(stmt, 4, anio);
+    sqlite3_bind_int(stmt, 5, citaId);
 
     if (sqlite3_step(stmt) == SQLITE_DONE) {
-        printf("Cita modificada correctamente.\n");
+        printf("Cita modificada correctamente a %d-%d-%d %s.\n", dia, mes, anio, horaSeleccionada);
     } else {
         printf("Error al modificar la cita: %s\n", sqlite3_errmsg(db));
     }
 
     sqlite3_finalize(stmt);
 }
+
 
 void actualizarEstadoCita(int medicoId) {
     int citaId;

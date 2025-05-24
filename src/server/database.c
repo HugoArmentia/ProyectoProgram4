@@ -11,6 +11,8 @@ void crearTablas() {
     const char *sql =
         "BEGIN TRANSACTION;"
 
+        "DROP TABLE IF EXISTS citas;" 
+
         "CREATE TABLE IF NOT EXISTS Usuario ("
         "id INTEGER PRIMARY KEY AUTOINCREMENT,"
         "nombre TEXT NOT NULL,"
@@ -30,9 +32,13 @@ void crearTablas() {
         "estado TEXT CHECK(estado IN ('Programada', 'Completada', 'Cancelada')),"
         "motivo TEXT,"
         "fecha_modificacion TEXT DEFAULT (datetime('now')),"
+        "dia INTEGER,"
+        "mes INTEGER,"
+        "anio INTEGER,"
         "FOREIGN KEY(medico_id) REFERENCES Usuario(id),"
         "FOREIGN KEY(paciente_id) REFERENCES Usuario(id)"
         ");"
+
 
         "CREATE TABLE IF NOT EXISTS historial_citas ("
         "id INTEGER PRIMARY KEY AUTOINCREMENT,"
