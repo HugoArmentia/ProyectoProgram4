@@ -16,7 +16,8 @@ int main() {
         return 1;
     }
 
-    // Mostrar tablas de depuración (opcional)
+    crearTablas();
+    
     sqlite3_stmt *stmt;
     const char *sql = "SELECT name FROM sqlite_master WHERE type='table';";
     if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) == SQLITE_OK) {

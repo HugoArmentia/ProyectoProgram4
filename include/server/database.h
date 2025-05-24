@@ -12,5 +12,7 @@ void cerrarBaseDeDatos();      // Cierra la base de datos
 
 // Función para ejecutar una consulta SQL genérica
 int ejecutarConsultaSQL(const char *sql);
+void crearTablas();
+
 
 #endif
