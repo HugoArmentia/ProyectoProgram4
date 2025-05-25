@@ -235,6 +235,7 @@ void menuPaciente() {
                 break;
             case 6:
                 enviar("LOGOUT");
+                cout << recibir();
                 tipoUsuario = "";
                 conectado = false;
                 return;
