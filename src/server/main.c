@@ -8,7 +8,7 @@
 #include "database.h"
 #include "config.h"
 
-int usuarioActualId = -1;
+/*int usuarioActualId = -1;
 char tipoUsuarioActual[20] = "";
 
 int main() {
@@ -85,3 +85,4 @@ int main() {
     printf("Gracias por usar el Sistema de Reservas de Citas Médicas (SRCM).\n");
     return 0;
 }
+*/

@@ -22,8 +22,8 @@ CREATE TABLE IF NOT EXISTS "citas" (
     "dia INTEGER,"
     "mes INTEGER,"
     "anio INTEGER,"
-    FOREIGN KEY("medico_id") REFERENCES "Usuario"("id"),
-    FOREIGN KEY("paciente_id") REFERENCES "Usuario"("id")
+    FOREIGN KEY("medico_id") REFERENCES "Usuario"("id") ON DELETE CASCADE,
+    FOREIGN KEY("paciente_id") REFERENCES "Usuario"("id") ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS "historial_citas" (
@@ -34,8 +34,8 @@ CREATE TABLE IF NOT EXISTS "historial_citas" (
     "estado" TEXT CHECK("estado" IN ('Programada', 'Completada', 'Cancelada')),
     "motivo" TEXT,
     "fecha_modificacion" TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY("medico_id") REFERENCES "Usuario"("id"),
-    FOREIGN KEY("paciente_id") REFERENCES "Usuario"("id")
+    FOREIGN KEY("medico_id") REFERENCES "Usuario"("id") ON DELETE CASCADE,
+    FOREIGN KEY("paciente_id") REFERENCES "Usuario"("id") ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS "logs" (

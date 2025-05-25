@@ -6,7 +6,7 @@
 #include <sqlite3.h>
 #include <time.h>
 
-#pragma comment(lib, "ws2_32.lib")
+// #pragma comment(lib, "ws2_32.lib")
 
 #define PORT 5000
 #define DB_PATH "citas_medicas.db"
@@ -17,15 +17,22 @@ sqlite3 *db;
 char tipo_usuario[20] = "";
 int id_usuario = -1;
 
-void escribir_log(const char *mensaje) {
-    FILE *log = fopen(LOG_PATH, "a");
-    if (log) {
-        time_t t = time(NULL);
-        struct tm *tm_info = localtime(&t);
-        char time_buf[64];
-        strftime(time_buf, sizeof(time_buf), "%Y-%m-%d %H:%M:%S", tm_info);
-        fprintf(log, "[%s] %s\n", time_buf, mensaje);
-        fclose(log);
+void registrar_log_evento(const char *tipo, const char *descripcion, int usuario_id) {
+    sqlite3_stmt *stmt;
+    const char *sql = "INSERT INTO logs (tipo_evento, descripcion, usuario_id) VALUES (?, ?, ?)";
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) == SQLITE_OK) {
+        sqlite3_bind_text(stmt, 1, tipo, -1, SQLITE_STATIC);
+        sqlite3_bind_text(stmt, 2, descripcion, -1, SQLITE_STATIC);
+        if (usuario_id >= 0)
+            sqlite3_bind_int(stmt, 3, usuario_id);
+        else
+            sqlite3_bind_null(stmt, 3);
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
+
+        // Mostrar también por consola
+        printf("[LOG - %s] %s (usuario_id=%d)\n", tipo, descripcion, usuario_id);
+        fflush(stdout); // para asegurar que se muestre inmediatamente
     }
 }
 
@@ -41,6 +48,8 @@ void normalizar_tipo(char *tipo) {
         strcpy(tipo, "Medico");
     else if (strcmp(tipo, "paciente") == 0 || strcmp(tipo, "Paciente") == 0)
         strcpy(tipo, "Paciente");
+    else if (strcmp(tipo, "admin") == 0 || strcmp(tipo, "Admin") == 0)
+    strcpy(tipo, "Admin");
     else
         tipo[0] = '\0';
 }
@@ -120,10 +129,10 @@ void manejar_comando(SOCKET sock, char *comando) {
         if (u && p && login_usuario(u, p)) {
             char r[64];
             snprintf(r, sizeof(r), "OK %s\n", tipo_usuario);
-            escribir_log("LOGIN correcto");
+            registrar_log_evento("Login", "Inicio de sesión exitoso", id_usuario);
             enviar(sock, r);
         } else {
-            escribir_log("LOGIN fallido");
+            registrar_log_evento("Login fallido", "Intento de login fallido", -1);
             enviar(sock, "ERROR\n");
         }
     } else if (strcmp(cmd, "REGISTER") == 0) {
@@ -131,7 +140,7 @@ void manejar_comando(SOCKET sock, char *comando) {
         char *t = strtok(NULL, " ");
         char *p = strtok(NULL, " ");
         if (n && t && p && registrar_usuario(n, t, p)) {
-            escribir_log("Usuario registrado");
+            registrar_log_evento("Registro", "Nuevo usuario registrado", -1);
             enviar(sock, "Usuario registrado\n");
         } else {
             enviar(sock, "Error al registrar usuario\n");
@@ -146,7 +155,12 @@ void manejar_comando(SOCKET sock, char *comando) {
         sqlite3_bind_int(stmt, 1, id_usuario);
         sqlite3_bind_text(stmt, 2, med, -1, SQLITE_STATIC);
         sqlite3_bind_text(stmt, 3, fecha, -1, SQLITE_STATIC);
-        enviar(sock, sqlite3_step(stmt) == SQLITE_DONE ? "Cita reservada\n" : "Error al reservar\n");
+        if (sqlite3_step(stmt) == SQLITE_DONE) {
+            registrar_log_evento("Cita", "Paciente reservó una cita", id_usuario);
+            enviar(sock, "Cita reservada\n");
+        } else {
+            enviar(sock, "Error al reservar\n");
+        }
         sqlite3_finalize(stmt);
     } else if (strcmp(cmd, "MODIFY") == 0) {
         char *id = strtok(NULL, " ");
@@ -157,7 +171,12 @@ void manejar_comando(SOCKET sock, char *comando) {
         sqlite3_bind_text(stmt, 1, fecha, -1, SQLITE_STATIC);
         sqlite3_bind_text(stmt, 2, id, -1, SQLITE_STATIC);
         sqlite3_bind_int(stmt, 3, id_usuario);
-        enviar(sock, sqlite3_step(stmt) == SQLITE_DONE ? "Cita modificada\n" : "Error al modificar\n");
+        if (sqlite3_step(stmt) == SQLITE_DONE) {
+            registrar_log_evento("Cita", "Paciente modificó una cita", id_usuario);
+            enviar(sock, "Cita modificada\n");
+        } else {
+            enviar(sock, "Error al modificar\n");
+        }
         sqlite3_finalize(stmt);
     } else if (strcmp(cmd, "CANCEL") == 0) {
         char *id = strtok(NULL, " ");
@@ -166,7 +185,12 @@ void manejar_comando(SOCKET sock, char *comando) {
         if (!id || sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) return;
         sqlite3_bind_text(stmt, 1, id, -1, SQLITE_STATIC);
         sqlite3_bind_int(stmt, 2, id_usuario);
-        enviar(sock, sqlite3_step(stmt) == SQLITE_DONE ? "Cita cancelada\n" : "Error al cancelar\n");
+        if (sqlite3_step(stmt) == SQLITE_DONE) {
+            registrar_log_evento("Cita", "Paciente canceló una cita", id_usuario);
+            enviar(sock, "Cita cancelada\n");
+        } else {
+            enviar(sock, "Error al cancelar\n");
+        }
         sqlite3_finalize(stmt);
     } else if (strcmp(cmd, "LIST-CITAS") == 0) {
         const char *sql = (strcmp(tipo_usuario, "Medico") == 0) ?
@@ -187,15 +211,178 @@ void manejar_comando(SOCKET sock, char *comando) {
         if (!id || sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) return;
         sqlite3_bind_text(stmt, 1, id, -1, SQLITE_STATIC);
         sqlite3_bind_int(stmt, 2, id_usuario);
-        enviar(sock, sqlite3_step(stmt) == SQLITE_DONE ? "Cita marcada como completada\n" : "Error al completar\n");
+        if (sqlite3_step(stmt) == SQLITE_DONE) {
+            registrar_log_evento("Cita", "Médico completó una cita", id_usuario);
+            enviar(sock, "Cita marcada como completada\n");
+        } else {
+            enviar(sock, "Error al completar\n");
+        }
         sqlite3_finalize(stmt);
     } else if (strcmp(cmd, "LOGOUT") == 0) {
         tipo_usuario[0] = '\0';
         id_usuario = -1;
         enviar(sock, "Sesion cerrada\n");
-    } else {
-        enviar(sock, "Comando no reconocido\n");
+    } else if (strcmp(cmd, "LIST-USERS") == 0) {
+        if (strcmp(tipo_usuario, "Admin") != 0) {
+            enviar(sock, "Acceso denegado\n");
+            return;
+        }
+
+        sqlite3_stmt *stmt;
+        const char *sql = "SELECT id, nombre, tipo FROM Usuario";
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+            enviar(sock, "Error al listar usuarios\n");
+            return;
+        }
+
+        char buffer[BUFFER_SIZE] = "";
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            char linea[256];
+            snprintf(linea, sizeof(linea), "ID: %d | Nombre: %s | Tipo: %s\n",
+                sqlite3_column_int(stmt, 0),
+                sqlite3_column_text(stmt, 1),
+                sqlite3_column_text(stmt, 2));
+            strcat(buffer, linea);
+        }
+        sqlite3_finalize(stmt);
+        enviar(sock, buffer[0] ? buffer : "No hay usuarios\n");
     }
+    else if (strcmp(cmd, "VIEW-LOGS") == 0) {
+        if (strcmp(tipo_usuario, "Admin") != 0) {
+            enviar(sock, "Acceso denegado\n");
+            return;
+        }
+
+        sqlite3_stmt *stmt;
+        const char *sql = "SELECT id, tipo_evento, descripcion, usuario_id, fecha_evento FROM logs ORDER BY fecha_evento DESC LIMIT 100";
+        // Limitamos a los últimos 100 logs para no saturar la respuesta
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+            enviar(sock, "Error al consultar logs\n");
+            return;
+        }
+
+        char buffer[BUFFER_SIZE] = "";
+        int hayLogs = 0;
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            hayLogs = 1;
+            int id = sqlite3_column_int(stmt, 0);
+            const unsigned char *tipo_evento = sqlite3_column_text(stmt, 1);
+            const unsigned char *descripcion = sqlite3_column_text(stmt, 2);
+            int usuario_id = sqlite3_column_int(stmt, 3);
+            const unsigned char *fecha_evento = sqlite3_column_text(stmt, 4);
+
+            char linea[512];
+            snprintf(linea, sizeof(linea),
+                    "ID: %d | Tipo: %s | Descripción: %s | Usuario ID: %d | Fecha: %s\n",
+                    id, tipo_evento ? (const char*)tipo_evento : "NULL",
+                    descripcion ? (const char*)descripcion : "NULL",
+                    usuario_id,
+                    fecha_evento ? (const char*)fecha_evento : "NULL");
+
+            if (strlen(buffer) + strlen(linea) < sizeof(buffer) - 1) {
+                strcat(buffer, linea);
+            } else {
+                // Buffer lleno, para no cortar logs a la mitad
+                break;
+            }
+        }
+        sqlite3_finalize(stmt);
+
+        if (!hayLogs) {
+            enviar(sock, "No hay logs disponibles\n");
+        } else {
+            enviar(sock, buffer);
+        }
+    }
+    else if (strcmp(cmd, "MODIFY-USER") == 0) {
+        if (strcmp(tipo_usuario, "Admin") != 0) {
+            enviar(sock, "Acceso denegado\n");
+            return;
+        }
+
+        char *id = strtok(NULL, " ");
+        char *nuevo_nombre = strtok(NULL, "");
+
+        if (!id || !nuevo_nombre) {
+            enviar(sock, "Uso: MODIFY-USER <id> <nuevo_nombre>\n");
+            return;
+        }
+
+        sqlite3_stmt *stmt;
+        const char *sql = "UPDATE Usuario SET nombre = ? WHERE id = ?";
+
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+            enviar(sock, "Error preparando la modificación\n");
+            return;
+        }
+
+        sqlite3_bind_text(stmt, 1, nuevo_nombre, -1, SQLITE_STATIC);
+        sqlite3_bind_text(stmt, 2, id, -1, SQLITE_STATIC);
+
+        if (sqlite3_step(stmt) == SQLITE_DONE) {
+            registrar_log_evento("Admin", "Modificó un usuario", id_usuario);
+            enviar(sock, "Usuario modificado correctamente\n");
+        } else {
+            enviar(sock, "Error al modificar usuario\n");
+        }
+
+
+        sqlite3_finalize(stmt);
+    }
+    else if (strcmp(cmd, "DELETE-USER") == 0) {
+        if (strcmp(tipo_usuario, "Admin") != 0) {
+            enviar(sock, "Acceso denegado\n");
+            return;
+        }
+
+        char *id = strtok(NULL, " ");
+        if (!id) {
+            enviar(sock, "Uso: DELETE-USER <id>\n");
+            return;
+        }
+
+        sqlite3_stmt *stmt;
+        const char *sql = "DELETE FROM Usuario WHERE id = ?";
+
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+            enviar(sock, "Error preparando la eliminación\n");
+            return;
+        }
+
+        sqlite3_bind_text(stmt, 1, id, -1, SQLITE_STATIC);
+
+        int rc = sqlite3_step(stmt);
+        if (rc == SQLITE_DONE) {
+            int cambios = sqlite3_changes(db);
+            if (cambios > 0) {
+                enviar(sock, "Usuario eliminado correctamente\n");
+            } else {
+                enviar(sock, "No existe usuario con ese ID\n");
+            }
+        } else {
+            enviar(sock, "Error al eliminar usuario\n");
+        }
+
+        sqlite3_finalize(stmt);
+    }
+    else if (strcmp(cmd, "SHUTDOWN") == 0) {
+        if (strcmp(tipo_usuario, "Admin") != 0) {
+            enviar(sock, "Acceso denegado\n");
+            return;
+        }
+
+        enviar(sock, "Servidor apagándose...\n");
+
+        closesocket(sock);
+
+        registrar_log_evento("Sistema", "Servidor apagado por admin", id_usuario);
+
+        sqlite3_close(db);
+        WSACleanup();
+
+        exit(0);
+    }
+
 }
 
 int main() {

@@ -1,34 +1,46 @@
+# Compiladores
 CC = gcc
+CXX = g++
 
+# Flags
 CFLAGS = -Wall -Wextra -Iinclude -Iinclude/server -Iinclude/common
+CXXFLAGS = -Wall -Wextra -Iinclude
 
-SRC = src/server/main.c \
-      src/server/menu.c \
-      src/server/usuarios.c \
-      src/server/citas.c \
-      src/server/historial.c \
-      src/server/logs.c \
-      src/server/database.c \
-      src/server/config.c \
-      src/common/utils.c \
-      src/server/calendario.c
-
-OBJ = $(SRC:.c=.o)
-
-EXEC = SRCM.exe
-
+# Librerías
 LDFLAGS = -Llib
+LIBS = -lsqlite3 -lws2_32
 
-all: $(EXEC)
+# Rutas
+SERVER_SRC = $(wildcard src/server/*.c) src/common/utils.c
+SERVER_OBJ = $(SERVER_SRC:.c=.o)
+SERVER_BIN = servidor.exe
 
-$(EXEC): $(OBJ)
-	$(CC) $(OBJ) -o $(EXEC) $(LDFLAGS) -lsqlite3
+CLIENT_SRC = src/client/SRCM_Client.cpp
+CLIENT_OBJ = $(CLIENT_SRC:.cpp=.o)
+CLIENT_BIN = SRCM_Client.exe
 
+# Reglas principales
+all: $(SERVER_BIN) $(CLIENT_BIN)
+
+$(SERVER_BIN): $(SERVER_OBJ)
+	$(CC) $(SERVER_OBJ) -o $@ $(LDFLAGS) $(LIBS)
+
+$(CLIENT_BIN): $(CLIENT_OBJ)
+	$(CXX) $(CLIENT_OBJ) -o $@ -lws2_32
+
+# Reglas de compilación
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-clean:
-	del /Q $(OBJ) $(EXEC) 2>nul || rm -f $(OBJ) $(EXEC)
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+# Limpiar objetos y ejecutables
+clean:
+	@echo "Eliminando objetos y ejecutables..."
+	-del /Q $(SERVER_OBJ) $(CLIENT_OBJ) $(SERVER_BIN) $(CLIENT_BIN) 2>nul || rm -f $(SERVER_OBJ) $(CLIENT_OBJ) $(SERVER_BIN) $(CLIENT_BIN)
+
+# Limpiar solo objetos
 cleanobj:
-	del /Q $(OBJ) 2>nul || rm -f $(OBJ)
+	@echo "Eliminando archivos .o..."
+	-del /Q $(SERVER_OBJ) $(CLIENT_OBJ) 2>nul || rm -f $(SERVER_OBJ) $(CLIENT_OBJ)

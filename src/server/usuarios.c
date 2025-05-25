@@ -7,7 +7,8 @@
 #include <sqlite3.h>
 #include "database.h"  
 
-extern char tipoUsuarioActual[20];
+int usuarioActualId = -1;
+char tipoUsuarioActual[20] = "";
 
 void registrarUsuario() {
     Usuario nuevoUsuario;

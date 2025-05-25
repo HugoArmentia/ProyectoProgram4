@@ -5,12 +5,13 @@
 #include <sstream>
 #include <vector>
 
-#pragma comment(lib, "ws2_32.lib")
+//#pragma comment(lib, "ws2_32.lib")
 
 using namespace std;
 
 SOCKET sock;
 string tipoUsuario = "";
+string nombreUsuario = "";
 bool conectado = false;
 
 bool conectar(const string &ip, int puerto) {
@@ -32,7 +33,10 @@ void enviar(const string &msg) {
 string recibir() {
     char buffer[2048];
     int len = recv(sock, buffer, sizeof(buffer) - 1, 0);
-    if (len <= 0) return "";
+    if (len <= 0) {
+        // Si len == 0, conexión cerrada; si len < 0, error
+        return "";
+    }
     buffer[len] = '\0';
     return string(buffer);
 }
@@ -43,21 +47,45 @@ void login() {
     cout << "Password: "; getline(cin, pass);
     enviar("LOGIN " + user + " " + pass);
     string r = recibir();
+    if (r.empty()) {
+        conectado = false;
+        cout << "Conexión perdida con el servidor durante el login.\n";
+        return;
+    }
     cout << r;
     if (r.find("OK") == 0) {
         tipoUsuario = r.substr(3);
         tipoUsuario.erase(tipoUsuario.find_last_not_of(" \n\r") + 1);
+        nombreUsuario = user; // <-- guardar nombre de usuario
         conectado = true;
     }
 }
 
 void registrarse() {
-    string nombre, tipo, pass;
-    cout << "Nombre: "; getline(cin, nombre);
-    cout << "Tipo (Paciente/Medico): "; getline(cin, tipo);
-    cout << "Password: "; getline(cin, pass);
-    enviar("REGISTER " + nombre + " " + tipo + " " + pass);
-    cout << recibir();
+    while (true) {
+        string nombre, tipo, pass;
+        cout << "Nombre: "; getline(cin, nombre);
+        cout << "Tipo (Paciente/Medico): "; getline(cin, tipo);
+        cout << "Password: "; getline(cin, pass);
+
+        enviar("REGISTER " + nombre + " " + tipo + " " + pass);
+        string respuesta = recibir();
+        if (respuesta.empty()) {
+            conectado = false;
+            cout << "Conexión perdida con el servidor durante el registro.\n";
+            return;
+        }
+        cout << respuesta;
+
+        if (respuesta.find("ERROR") != string::npos && 
+            respuesta.find("ya existe") != string::npos) {
+            cout << "Ese nombre ya está registrado. ¿Deseas intentar con otro? (s/n): ";
+            string opcion; getline(cin, opcion);
+            if (opcion != "s" && opcion != "S") break;
+        } else {
+            break;
+        }
+    }
 }
 
 void menuPaciente() {
@@ -89,6 +117,7 @@ void menuPaciente() {
             break;
         }
         cout << recibir();
+        if (!conectado) break;
     }
 }
 
@@ -112,8 +141,67 @@ void menuMedico() {
             break;
         }
         cout << recibir();
+        if (!conectado) break; 
     }
 }
+
+void menuAdmin() {
+    if (tipoUsuario != "Admin" || nombreUsuario != "admin") {
+
+        cout << "Acceso denegado. Solo el administrador puede usar este menú.\n";
+        return;
+    }
+
+    while (true) {
+        cout << "\n--- MENU ADMIN ---\n";
+        cout << "1. Listar usuarios\n";
+        cout << "2. Ver logs\n";
+        cout << "3. Crear nuevo usuario\n";
+        cout << "4. Modificar usuario\n";
+        cout << "5. Eliminar usuario\n";
+        cout << "6. Apagar servidor\n";
+        cout << "0. Cerrar sesión\n> ";
+
+        int op; cin >> op; cin.ignore();
+
+        if (op == 1) {
+            enviar("LIST-USERS");
+        } else if (op == 2) {
+            enviar("VIEW-LOGS");
+        } else if (op == 3) {
+            string nombre, tipo, pass;
+            cout << "Nombre: "; getline(cin, nombre);
+            cout << "Tipo (Paciente/Medico): "; getline(cin, tipo);
+            cout << "Password: "; getline(cin, pass);
+            enviar("REGISTER " + nombre + " " + tipo + " " + pass);
+        } else if (op == 4) {
+            string id, nuevoNombre;
+            cout << "ID del usuario a modificar: "; getline(cin, id);
+            cout << "Nuevo nombre: "; getline(cin, nuevoNombre);
+            enviar("MODIFY-USER " + id + " " + nuevoNombre);
+        } else if (op == 5) {
+            string id;
+            cout << "ID del usuario a eliminar: "; getline(cin, id);
+            enviar("DELETE-USER " + id);
+        } else if (op == 6) {
+            enviar("SHUTDOWN");
+            conectado = false;
+            break;
+        } else if (op == 0) {
+            enviar("LOGOUT");
+            tipoUsuario = "";
+            conectado = false;
+            break;
+        } else {
+            cout << "Opción no válida. Intente nuevamente.\n";
+            continue;
+        }
+
+        cout << recibir();
+        if (!conectado) break; 
+    }
+}
+
 
 int main() {
     if (!conectar("127.0.0.1", 5000)) {
@@ -129,8 +217,15 @@ int main() {
             else if (op == 2) registrarse();
             else break;
         } else {
-            if (tipoUsuario == "Paciente") menuPaciente();
-            else if (tipoUsuario == "Medico") menuMedico();
+            if (tipoUsuario == "Paciente") {
+                menuPaciente();
+            }
+            else if (tipoUsuario == "Medico") {
+                menuMedico();
+            }
+            else if (tipoUsuario == "Admin") {
+                menuAdmin();
+            }
             else {
                 cout << "Tipo de usuario inválido.\n";
                 conectado = false;

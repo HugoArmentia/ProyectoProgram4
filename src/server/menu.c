@@ -7,8 +7,6 @@
 #include "logs.h"
 #include "calendario.h"
 
-extern int usuarioActualId;
-
 void mostrarMenuPaciente() {
     int opcion;
     int paciente_id = usuarioActualId;
