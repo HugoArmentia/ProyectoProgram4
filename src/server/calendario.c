@@ -4,18 +4,11 @@
 #include <time.h>
 #include "citas.h"
 #include "calendario.h"
-
-#define HORAS_DISPONIBLES 24  
-#define MAX_MESES 6
-
-const char *horas[] = {"08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
-                      "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30",
-                      "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30"};
-
+#include "horas.h"
 #include <sqlite3.h>
 #include "database.h"
 
-extern const char *horas[];  // declaramos el array de horas si está definido en otro archivo
+extern const char *horas[];
 
 void mostrarHorasDisponibles(int dia, int mes, int anio) {
     printf("\nHoras disponibles para %d-%d-%d:\n", dia, mes, anio);
@@ -30,8 +23,6 @@ void mostrarHorasDisponibles(int dia, int mes, int anio) {
 
     sqlite3_bind_int(stmt, 1, dia);
     sqlite3_bind_int(stmt, 2, mes);
-    sqlite3_bind_int(stmt, 3, anio);
-
     int usadas[HORAS_DISPONIBLES] = {0};
 
     while (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -78,7 +69,7 @@ void mostrarCalendarioMensual(int mes, int anio) {
 
     for (int dia = 1; dia <= diasEnMes; dia++) {
         if (anio == anioActual && mes == mesActual && dia < diaHoy) {
-            printf(" -- ");  // Día pasado: no disponible
+            printf(" -- ");
             continue;
         }
 
@@ -162,7 +153,6 @@ void reservarCitaDesdeCalendario(int paciente_id) {
     fgets(motivo, sizeof(motivo), stdin);
     motivo[strcspn(motivo, "\n")] = 0;
 
-    // Validar si ya hay una cita en esa fecha y hora con el mismo médico
     const char *checkSql = "SELECT COUNT(*) FROM citas "
                         "WHERE dia = ? AND mes = ? AND anio = ? AND fecha = ? AND medico_id = ? AND estado = 'Programada';";
 
@@ -223,11 +213,10 @@ void mostrarCalendariosFuturos() {
     int anio = fechaActual->tm_year + 1900;
     int mes = fechaActual->tm_mon + 1;
 
-    // Mostrar los calendarios de los próximos 6 meses
     for (int i = 0; i < MAX_MESES; i++) {
-        mostrarCalendarioMensual(mes, anio);  // Llamar a la función que muestra el calendario de un mes específico
-        mes++;  // Pasar al siguiente mes
-        if (mes > 12) {  // Si el mes supera diciembre, pasar al siguiente año
+        mostrarCalendarioMensual(mes, anio);
+        mes++;
+        if (mes > 12) {
             mes = 1;
             anio++;
         }

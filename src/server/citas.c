@@ -12,7 +12,7 @@
 #include "historial.h"
 
 #define HORAS_DISPONIBLES 24  
-extern const char *horas[];  // declaramos el array de horas si está definido en otro archivo
+extern const char *horas[];
 
 void listarCitas() {
     const char *sql = "SELECT id, fecha, motivo, dia, mes, anio FROM citas WHERE estado = 'Programada';";
@@ -143,7 +143,6 @@ void modificarCita() {
     scanf("%d", &citaId);
     getchar();
 
-    // Obtener el medico_id actual de la cita
     int medico_id = -1;
     const char *sqlGetMedico = "SELECT medico_id FROM citas WHERE id = ?;";
     sqlite3_stmt *stmtMedico;
@@ -194,7 +193,6 @@ void modificarCita() {
 
     const char *horaSeleccionada = horas[indiceHora];
 
-    // 🔒 Validar conflicto: misma fecha y hora para el mismo médico en otra cita
     const char *checkSql = "SELECT COUNT(*) FROM citas "
                            "WHERE dia = ? AND mes = ? AND anio = ? AND fecha = ? AND medico_id = ? "
                            "AND estado = 'Programada' AND id != ?;";
@@ -209,8 +207,7 @@ void modificarCita() {
     sqlite3_bind_int(checkStmt, 3, anio);
     sqlite3_bind_text(checkStmt, 4, horaSeleccionada, -1, SQLITE_STATIC);
     sqlite3_bind_int(checkStmt, 5, medico_id);
-    sqlite3_bind_int(checkStmt, 6, citaId);  // ← ignorar la propia cita
-
+    sqlite3_bind_int(checkStmt, 6, citaId);
     int conflicto = 0;
     if (sqlite3_step(checkStmt) == SQLITE_ROW) {
         conflicto = sqlite3_column_int(checkStmt, 0);
@@ -218,11 +215,10 @@ void modificarCita() {
     sqlite3_finalize(checkStmt);
 
     if (conflicto > 0) {
-        printf("⚠️ Ya existe una cita para ese médico a esa hora. No se puede modificar.\n");
+        printf("Ya existe una cita para ese médico a esa hora. No se puede modificar.\n");
         return;
     }
 
-    // ✅ Si no hay conflicto, actualizar
     const char *sqlUpdate = "UPDATE citas SET fecha = ?, dia = ?, mes = ?, anio = ?, fecha_modificacion = datetime('now') WHERE id = ?;";
     sqlite3_stmt *stmt;
     if (sqlite3_prepare_v2(db, sqlUpdate, -1, &stmt, NULL) != SQLITE_OK) {
@@ -237,7 +233,7 @@ void modificarCita() {
     sqlite3_bind_int(stmt, 5, citaId);
 
     if (sqlite3_step(stmt) == SQLITE_DONE) {
-        printf("✅ Cita modificada correctamente a %02d-%02d-%d %s\n", dia, mes, anio, horaSeleccionada);
+        printf("Cita modificada correctamente a %02d-%02d-%d %s\n", dia, mes, anio, horaSeleccionada);
     } else {
         printf("Error al modificar la cita: %s\n", sqlite3_errmsg(db));
     }
@@ -252,13 +248,12 @@ void actualizarEstadoCita(int medicoId) {
 
     printf("Ingrese el ID de la cita que desea actualizar: ");
     scanf("%d", &citaId);
-    getchar();  // Limpiar buffer
+    getchar();
 
     printf("Ingrese el nuevo estado (Programada / Completada / Cancelada): ");
     fgets(nuevoEstado, sizeof(nuevoEstado), stdin);
     nuevoEstado[strcspn(nuevoEstado, "\n")] = 0;
 
-    // Verificar si la cita pertenece al médico
     const char *sql_check = "SELECT id FROM citas WHERE id = ? AND medico_id = ?;";
     sqlite3_stmt *stmt_check;
 
@@ -277,7 +272,6 @@ void actualizarEstadoCita(int medicoId) {
     }
     sqlite3_finalize(stmt_check);
 
-    // Actualizar estado
     const char *sql_update = "UPDATE citas SET estado = ?, fecha_modificacion = datetime('now') WHERE id = ?;";
     sqlite3_stmt *stmt_update;
 
@@ -292,12 +286,10 @@ void actualizarEstadoCita(int medicoId) {
     if (sqlite3_step(stmt_update) == SQLITE_DONE) {
         printf("Estado de la cita actualizado correctamente.\n");
 
-        // Registrar en log
         char descripcion[200];
         sprintf(descripcion, "Cita %d actualizada a estado: %s", citaId, nuevoEstado);
         registrarLog("Actualizar Cita", descripcion, medicoId);
 
-        // Obtener información y registrar en historial
         const char *sql_get = "SELECT paciente_id, medico_id, fecha, motivo FROM citas WHERE id = ?;";
         sqlite3_stmt *stmt_get;
         if (sqlite3_prepare_v2(db, sql_get, -1, &stmt_get, NULL) == SQLITE_OK) {

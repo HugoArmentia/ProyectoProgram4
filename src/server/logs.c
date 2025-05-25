@@ -4,9 +4,8 @@
 #include <sqlite3.h>
 #include "logs.h"
 #include "utils.h"
-#include "database.h"  // Asegúrate de que sqlite3 *db está definido aquí
+#include "database.h"
 
-// Registrar un log en la base de datos
 void registrarLog(const char *tipo_evento, const char *descripcion, int usuario_id) {
     char fecha_evento[20];
     obtenerFechaHoraActual(fecha_evento);
@@ -30,7 +29,6 @@ void registrarLog(const char *tipo_evento, const char *descripcion, int usuario_
     }
 }
 
-// Mostrar todos los logs almacenados en la base de datos
 void listarLogs() {
     sqlite3_stmt *stmt;
     const char *sql = "SELECT id, tipo_evento, descripcion, usuario_id, fecha_evento FROM logs ORDER BY id DESC";

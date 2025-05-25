@@ -59,6 +59,8 @@ void crearTablas() {
         "FOREIGN KEY(usuario_id) REFERENCES Usuario(id)"
         ");"
 
+        "INSERT OR IGNORE INTO Usuario(nombre, tipo, password) VALUES ('admin', 'Admin', 'admin123');"
+
         "COMMIT;";
 
     char *errMsg = NULL;
@@ -71,7 +73,7 @@ void crearTablas() {
 }
 
 int inicializarBaseDeDatos() {
-    int rc = sqlite3_open(configuracion.nombre_base_datos, &db);  // Ruta a tu archivo .db creado en DB Browser for SQLite
+    int rc = sqlite3_open(configuracion.nombre_base_datos, &db);
     if (rc != SQLITE_OK) {
         printf("No se pudo abrir la base de datos: %s\n", sqlite3_errmsg(db));
         return 0;
@@ -80,25 +82,23 @@ int inicializarBaseDeDatos() {
     return 1;
 }
 
-// Función para cerrar la base de datos
 void cerrarBaseDeDatos() {
     if (db) {
-        sqlite3_close(db);  // Cerrar la base de datos
+        sqlite3_close(db);
         printf("Base de datos cerrada correctamente.\n");
-        db = NULL;  // Asegurarse de que db no quede apuntando a una dirección inválida
+        db = NULL;
     } else {
         printf("La base de datos ya está cerrada o no fue inicializada correctamente.\n");
     }
 }
 
-// Función para ejecutar una consulta SQL (ejemplo genérico)
 int ejecutarConsultaSQL(const char *sql) {
     char *errMsg = NULL;
     int rc = sqlite3_exec(db, sql, 0, 0, &errMsg);
     if (rc != SQLITE_OK) {
         fprintf(stderr, "Error al ejecutar la consulta: %s\n", errMsg);
         if (errMsg) {
-            sqlite3_free(errMsg);  // Liberar mensaje de error si existe
+            sqlite3_free(errMsg);
         }
         return 0;
     }

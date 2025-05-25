@@ -8,7 +8,6 @@ typedef struct {
     char email[50];
     char telefono[15];
     char direccion[100];
-    // fecha_registro lo gestiona SQLite con datetime('now'), así que no hace falta aquí
 } Usuario;
 
 

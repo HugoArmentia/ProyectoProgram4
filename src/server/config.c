@@ -14,7 +14,6 @@ int cargarConfiguracion(const char *rutaArchivo) {
 
     char linea[MAX_CONFIG_LINE];
     while (fgets(linea, sizeof(linea), archivo)) {
-        // Elimina salto de línea si lo hay
         linea[strcspn(linea, "\r\n")] = 0;
 
         char clave[50];

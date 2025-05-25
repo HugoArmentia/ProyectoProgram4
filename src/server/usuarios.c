@@ -37,7 +37,6 @@ void registrarUsuario() {
     fgets(nuevoUsuario.direccion, 100, stdin);
     nuevoUsuario.direccion[strcspn(nuevoUsuario.direccion, "\n")] = 0;
 
-    // Sentencia SQL con placeholders
     const char *sql = "INSERT INTO Usuario (nombre, tipo, password, email, telefono, direccion, fecha_registro) "
                       "VALUES (?, ?, ?, ?, ?, ?, datetime('now'));";
 
@@ -47,7 +46,6 @@ void registrarUsuario() {
         return;
     }
 
-    // Asignar valores a los parámetros
     sqlite3_bind_text(stmt, 1, nuevoUsuario.nombre, -1, SQLITE_STATIC);
     sqlite3_bind_text(stmt, 2, nuevoUsuario.tipo, -1, SQLITE_STATIC);
     sqlite3_bind_text(stmt, 3, nuevoUsuario.password, -1, SQLITE_STATIC);
@@ -55,7 +53,6 @@ void registrarUsuario() {
     sqlite3_bind_text(stmt, 5, nuevoUsuario.telefono, -1, SQLITE_STATIC);
     sqlite3_bind_text(stmt, 6, nuevoUsuario.direccion, -1, SQLITE_STATIC);
 
-    // Ejecutar
     if (sqlite3_step(stmt) != SQLITE_DONE) {
         printf("Error al registrar usuario: %s\n", sqlite3_errmsg(db));
     } else {
@@ -139,11 +136,11 @@ void listarUsuarios() {
 
 void modificarUsuario() {
     int userId;
-    listarUsuarios();  // Mostrar los usuarios para elegir
+    listarUsuarios();
 
     printf("Ingrese el ID del usuario que desea modificar: ");
     scanf("%d", &userId);
-    getchar();  // Limpiar el buffer
+    getchar();
 
     char nombre[50], tipo[20], email[50], telefono[15], direccion[100], password[50];
 
@@ -199,11 +196,11 @@ void modificarUsuario() {
 
 void eliminarUsuario() {
     int userId;
-    listarUsuarios();  // Mostrar los usuarios actuales
+    listarUsuarios();
 
     printf("Ingrese el ID del usuario que desea eliminar: ");
     scanf("%d", &userId);
-    getchar();  // Limpiar el buffer
+    getchar();
 
     const char *sql = "DELETE FROM Usuario WHERE id = ?;";
     sqlite3_stmt *stmt;
